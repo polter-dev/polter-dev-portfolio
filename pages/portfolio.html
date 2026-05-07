@@ -155,7 +155,7 @@ const navItems = [
 { id: 'about', label: 'About', icon: 'user', route: '/about', key: 'a' },
 { id: 'projects', label: 'Projects', icon: 'code', route: '/projects', key: 'p' },
 { id: 'contact', label: 'Contact', icon: 'mail', route: '/contact', key: 'c' },
-{ id: 'github', label: 'GitHub', icon: 'github', route: '__external', key: 'g', external: true }];
+{ id: 'github', label: 'GitHub', icon: 'github', route: '__external', url: 'https://github.com/polter-dev', key: 'g', external: true }];
 
 
 const NavIconButton = ({ item, active, compact, onNavigate, accent }) => {
@@ -471,10 +471,10 @@ const ContactPage = ({ accent }) =>
 
 // ----- App shell -----
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "accent": "#10B981",
+  "accent": "#FACC15",
   "showName": true,
   "alwaysShowTooltips": false,
-  "background": "#E8E4DA"
+  "background": "#F5F5F2"
 }/*EDITMODE-END*/;
 
 const accentSwatches = ['#10B981', '#F97316', '#6366F1', '#EC4899', '#FACC15'];
@@ -509,6 +509,7 @@ function App() {
       if (k === 'g') {
         // simulate external nav
         flashExternal('GitHub');
+        window.open('https://github.com/polter-dev', '_blank', 'noopener');
       }
     };
     window.addEventListener('keydown', handler);
@@ -524,6 +525,9 @@ function App() {
   const handleNavigate = (item) => {
     if (item.external) {
       flashExternal(item.label || (item.id === 'resume' ? 'Resume PDF' : 'link'));
+      if (item.url) {
+        window.open(item.url, '_blank', 'noopener');
+      }
       return;
     }
     setRoute(item.route);
