@@ -132,6 +132,8 @@ const Icon = ({ name, size = 16 }) => {
       return <svg {...props}><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" /></svg>;
     case "circle":
       return <svg {...props}><circle cx="12" cy="12" r="3" /></svg>;
+    case "layers":
+      return <svg {...props}><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>;
     case "moon":
       return <svg {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
     default:return null;
@@ -156,6 +158,7 @@ const Avatar = ({ size = 32 }) =>
 const navItems = [
 { id: 'about', label: 'About', icon: 'user', route: '/about', key: 'a' },
 { id: 'projects', label: 'Projects', icon: 'code', route: '/projects', key: 'p' },
+{ id: 'stack', label: 'Stack', icon: 'layers', route: '/stack', key: 's' },
 { id: 'contact', label: 'Contact', icon: 'mail', route: '/contact', key: 'c' },
 { id: 'github', label: 'GitHub', icon: 'github', route: '__external', url: 'https://github.com/polter-dev', key: 'g', external: true }];
 
@@ -442,6 +445,48 @@ const ProjectsPage = ({ accent }) =>
   </PagePlaceholder>;
 
 
+const stackGroups = [
+  { label: 'languages',  items: ['Python', 'Java', 'C', 'C++', 'Go', 'TypeScript', 'JavaScript', 'SQL'] },
+  { label: 'web',        items: ['Next.js', 'tRPC', 'Zod', 'Supabase', 'Postgres', 'React'] },
+  { label: 'libraries',  items: ['NumPy', 'pandas', 'Matplotlib', 'Seaborn', 'scikit-learn', 'Nixtla'] },
+  { label: 'developer tools', items: ['Git', 'VS Code', 'Unix / Linux', 'AWS', 'PostgreSQL', 'Docker', 'tmux', 'neovim'] },
+  { label: 'concepts',   items: ['data structures', 'algorithms', 'distributed systems', 'API reverse-engineering', 'forecasting'] },
+];
+
+const StackPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>stack · what i reach for</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Tools on the bench.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480, textWrap: 'pretty' }}>
+      What I'm comfortable with, what I'm learning, and what I'd happily go deeper on.
+    </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      {stackGroups.map(g =>
+      <div key={g.label}>
+        <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>
+          {g.label}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {g.items.map(t =>
+          <span key={t} className="mono" style={{
+            fontSize: 11, padding: '5px 10px', borderRadius: 6,
+            background: 'rgba(0,0,0,0.04)', color: '#3a3a36',
+            border: '1px solid rgba(0,0,0,0.06)',
+          }}>{t}</span>
+          )}
+        </div>
+      </div>
+      )}
+    </div>
+    <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }}/>
+      <span className="mono">currently sharpening: distributed systems, ML infra</span>
+    </div>
+  </PagePlaceholder>;
+
+
 const ContactPage = ({ accent }) =>
 <PagePlaceholder>
     <SectionLabel>contact · ↓</SectionLabel>
@@ -509,6 +554,7 @@ function App() {
       const k = e.key.toLowerCase();
       if (k === 'a') {setRoute('/about');} else
       if (k === 'p') {setRoute('/projects');} else
+      if (k === 's') {setRoute('/stack');} else
       if (k === 'c') {setRoute('/contact');} else
       if (k === 'h' || k === 'escape') {setRoute('/');} else
       if (k === 'g') {
@@ -613,6 +659,7 @@ function App() {
           
             {route === '/about' && <AboutPage />}
             {route === '/projects' && <ProjectsPage accent={tweaks.accent} />}
+            {route === '/stack' && <StackPage accent={tweaks.accent} />}
             {route === '/contact' && <ContactPage accent={tweaks.accent} />}
 
             {/* back hint */}
@@ -713,6 +760,7 @@ function App() {
           <window.TweakButton onClick={() => setRoute('/')}>→ Home</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/about')}>→ About</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/projects')}>→ Projects</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/stack')}>→ Stack</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/contact')}>→ Contact</window.TweakButton>
         </window.TweakSection>
       </window.TweaksPanel>
