@@ -93,6 +93,7 @@
 <script type="text/babel">
 
 
+
 const { useState, useEffect, useRef, useMemo } = React;
 const { motion, AnimatePresence, LayoutGroup } = window.Motion || window.FramerMotion || {};
 
@@ -362,13 +363,16 @@ const AboutPage = () =>
 <PagePlaceholder>
     <SectionLabel>about · 01</SectionLabel>
     <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
-      I build systems that other systems lean on.
+      Hi, I'm Marcus.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px' }}>
-      CS at UCF. I spend most of my time in the seam between distributed systems and machine learning — the places where neither textbook fully covers what's happening.
-    </p>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px' }}>
-      Currently interested in inference scheduling, sparse retrieval, and the stubborn problem of making latency predictable.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px', textWrap: 'pretty' }}>CS undergrad at UCF. I'm a teaching assistant for Data Structures & Algorithms and work part time at a restaurant. Most of what I know comes from coursework I've taken seriously and side projects I've followed through on some distributed systems, some machine learning. I learn by building: a Redis clone in C++ to understand event loops from the socket up.
+
+  </p>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px', textWrap: 'pretty' }}>Lately I've been drawn to distributed systems and machine learning, and the places where the two overlap. Outside of academics, I have a passion for cars, working on them in the garage with a few tools, and enjoy scenic journeys through nature. I play video games with friends and enjoy using coding tools into the day to day around them.
+
+  </p>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px', textWrap: 'pretty' }}>
+      I like things I can take apart and put back together: code, cars, ranked ladders. Same instinct, different tools.
     </p>
     <div style={{ display: 'flex', gap: 24, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
       {[
@@ -422,11 +426,11 @@ const ProjectsPage = ({ accent }) =>
             <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {p.tags.map((t) =>
-        <span key={t} className="mono" style={{
-          fontSize: 10, padding: '2px 7px', borderRadius: 4,
-          background: 'rgba(0,0,0,0.04)', color: '#5a5a55'
-        }}>{t}</span>
-        )}
+          <span key={t} className="mono" style={{
+            fontSize: 10, padding: '2px 7px', borderRadius: 4,
+            background: 'rgba(0,0,0,0.04)', color: '#5a5a55'
+          }}>{t}</span>
+          )}
             </div>
           </div>
           <div style={{ color: accent, opacity: 0.7, paddingTop: 4 }}>
@@ -476,7 +480,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "showName": true,
   "alwaysShowTooltips": false,
   "background": "#F4F1EC"
-}/*EDITMODE-END*/;
+} /*EDITMODE-END*/;
 
 const accentSwatches = ['#10B981', '#F97316', '#6366F1', '#EC4899', '#FACC15'];
 const bgSwatches = ['#F4F1EC', '#EDE8DD', '#F5F5F2', '#E8E4DA', '#FFFFFF'];
@@ -551,7 +555,7 @@ function App() {
         fontSize: 11, color: '#8a8580', letterSpacing: 0.6
       }}>
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: tweaks.accent, boxShadow: `0 0 0 3px ${tweaks.accent}22` }} />
-        marcus.vale
+        polter-dev
       </div>
       <div style={{
         position: 'fixed', top: 18, right: 22,
