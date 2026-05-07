@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcus — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<style>
+  :root {
+    --color-bg: #F4F1EC;
+    --color-surface: #0A0A0A;
+    --color-text: #ffffff;
+    --color-muted: #8a8a8a;
+    --color-accent: #10B981;
+    --color-divider: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--color-bg);
+    font-family: 'Geist', -apple-system, sans-serif;
+    color: #1a1a1a;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { height: 100%; }
+  .mono { font-family: 'Geist Mono', monospace; }
+
+  /* Background grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.025) 1px, transparent 0);
+    background-size: 4px 4px;
+    z-index: 1;
+  }
+
+  button {
+    font-family: inherit;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* Focus visible */
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 999px;
+  }
+
+  /* Accent shimmer */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* keyboard hint */
+  .kbd {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+
+const { useState, useEffect, useRef, useMemo } = React;
+const { motion, AnimatePresence, LayoutGroup } = window.Motion || window.FramerMotion || {};
+
+// fallback if framer-motion didn't load under Motion namespace
+const M = window.Motion && window.Motion.motion || window.FramerMotion && window.FramerMotion.motion;
+const AP = window.Motion && window.Motion.AnimatePresence || window.FramerMotion && window.FramerMotion.AnimatePresence;
+const LG = window.Motion && window.Motion.LayoutGroup || window.FramerMotion && window.FramerMotion.LayoutGroup;
+
+// ----- Icons (Lucide-style, hand-traced) -----
+const Icon = ({ name, size = 16 }) => {
+  const props = {
+    width: size, height: size, viewBox: "0 0 24 24",
+    fill: "none", stroke: "currentColor", strokeWidth: 2,
+    strokeLinecap: "round", strokeLinejoin: "round"
+  };
+  switch (name) {
+    case "user":
+      return <svg {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>;
+    case "code":
+      return <svg {...props}><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>;
+    case "folder":
+      return <svg {...props}><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" /><path d="m9 13 2 2 4-4" /></svg>;
+    case "mail":
+      return <svg {...props}><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>;
+    case "github":
+      return <svg {...props}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>;
+    case "download":
+      return <svg {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>;
+    case "arrow-left":
+      return <svg {...props}><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>;
+    case "arrow-up-right":
+      return <svg {...props}><path d="M7 7h10v10" /><path d="M7 17 17 7" /></svg>;
+    case "external":
+      return <svg {...props}><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>;
+    case "command":
+      return <svg {...props}><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" /></svg>;
+    case "circle":
+      return <svg {...props}><circle cx="12" cy="12" r="3" /></svg>;
+    case "moon":
+      return <svg {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
+    default:return null;
+  }
+};
+
+// ----- Avatar -----
+const Avatar = ({ size = 32 }) =>
+<div style={{
+  width: size, height: size, borderRadius: '50%',
+  flexShrink: 0,
+  boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.4)',
+  background: '#f4f1ec',
+  backgroundImage: 'url(avatar.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  position: 'relative'
+}} />;
+
+
+// ----- Nav buttons -----
+const navItems = [
+{ id: 'about', label: 'About', icon: 'user', route: '/about', key: 'a' },
+{ id: 'projects', label: 'Projects', icon: 'code', route: '/projects', key: 'p' },
+{ id: 'contact', label: 'Contact', icon: 'mail', route: '/contact', key: 'c' },
+{ id: 'github', label: 'GitHub', icon: 'github', route: '__external', key: 'g', external: true }];
+
+
+const NavIconButton = ({ item, active, compact, onNavigate, accent }) => {
+  const [hover, setHover] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const showTip = hover || focus;
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <M.button
+        onClick={() => onNavigate(item)}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        aria-label={item.label}
+        style={{
+          width: compact ? 32 : 36,
+          height: compact ? 32 : 36,
+          borderRadius: '50%',
+          background: active ? accent : 'rgba(255,255,255,0.04)',
+          color: active ? '#0a0a0a' : 'rgba(255,255,255,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 200ms, color 200ms',
+          position: 'relative'
+        }}>
+        
+        <Icon name={item.icon} size={compact ? 14 : 16} />
+        {item.external &&
+        <span style={{
+          position: 'absolute', top: 4, right: 4, width: 5, height: 5,
+          borderRadius: '50%', background: 'rgba(255,255,255,0.4)'
+        }} />
+        }
+      </M.button>
+      <AP>
+        {showTip &&
+        <M.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 14px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#0a0a0a',
+            color: 'white',
+            fontSize: 11,
+            padding: '5px 10px',
+            borderRadius: 6,
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+            fontFamily: 'Geist Mono, monospace',
+            letterSpacing: 0.3,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            zIndex: 30
+          }}>
+          
+            {item.label}
+            <span className="kbd" style={{ fontSize: 9, padding: '1px 5px' }}>{item.key.toUpperCase()}</span>
+          </M.div>
+        }
+      </AP>
+    </div>);
+
+};
+
+// ----- The Pill -----
+const Pill = ({ route, onNavigate, accent, showName, scale }) => {
+  const compact = route !== '/';
+  const showLabel = showName && !compact;
+
+  return (
+    <M.div
+      layout
+      layoutId="main-pill"
+      transition={{ type: 'spring', stiffness: 280, damping: 32, mass: 0.9 }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: compact ? 10 : 14,
+        padding: compact ? '6px 6px 6px 10px' : '8px 8px 8px 12px',
+        background: 'var(--color-surface)',
+        borderRadius: 999,
+        boxShadow: compact ?
+        '0 4px 16px rgba(10,10,10,0.12), 0 1px 2px rgba(0,0,0,0.06)' :
+        '0 12px 40px rgba(10,10,10,0.18), 0 2px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        zIndex: 20
+      }}>
+      
+      <M.div key="avatar" layout="position">
+        <Avatar size={compact ? 26 : 36} />
+      </M.div>
+
+      {showLabel &&
+      <M.div
+        key="label"
+        layout="position"
+        style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, paddingRight: 4 }}>
+        
+          <span className="mono" style={{ fontSize: 10, color: 'var(--color-muted)', letterSpacing: 1, textTransform: 'uppercase' }}>
+            Hello, I'm
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'white', letterSpacing: -0.2 }}>Marcus
+
+        </span>
+        </M.div>
+      }
+
+      {compact &&
+      <M.span
+        key="compact-name"
+        layout="position"
+        style={{ fontSize: 12, fontWeight: 500, color: 'white', letterSpacing: -0.1, paddingRight: 2 }}>
+        
+          Marcus
+        </M.span>
+      }
+
+      <M.div key="div1" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />
+
+      <M.div key="nav" layout="position" style={{ display: 'flex', gap: compact ? 2 : 4, alignItems: 'center' }}>
+        {navItems.map((item) =>
+        <NavIconButton
+          key={item.id}
+          item={item}
+          active={route === item.route}
+          compact={compact}
+          onNavigate={onNavigate}
+          accent={accent} />
+
+        )}
+      </M.div>
+
+      <M.div key="div2" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />
+
+      <M.button
+        key="resume"
+        layout="position"
+        onClick={() => onNavigate({ id: 'resume', external: true, route: '__resume' })}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        aria-label="Download Resume"
+        style={{
+          height: compact ? 32 : 36,
+          padding: compact ? '0 12px' : '0 16px',
+          borderRadius: 999,
+          background: accent,
+          color: '#062b1f',
+          fontWeight: 600,
+          fontSize: compact ? 12 : 13,
+          letterSpacing: -0.1,
+          display: 'flex', alignItems: 'center', gap: 6,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: `0 0 0 1px ${accent}, 0 4px 14px ${accent}55`
+        }}>
+        
+        <span style={{
+          position: 'absolute', inset: 0,
+          background: `linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%)`,
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 2.8s linear infinite',
+          pointerEvents: 'none'
+        }} />
+        <Icon name="download" size={compact ? 12 : 14} />
+        <span style={{ position: 'relative' }}>Resume</span>
+      </M.button>
+    </M.div>);
+
+};
+
+// ----- Inner page content -----
+const PagePlaceholder = ({ children }) =>
+<M.div
+  initial={{ opacity: 0, y: 16 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -8 }}
+  transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+  style={{ maxWidth: 640, margin: '0 auto', padding: '0 32px' }}>
+  
+    {children}
+  </M.div>;
+
+
+const SectionLabel = ({ children }) =>
+<span className="mono" style={{
+  fontSize: 11, color: '#8a8580', letterSpacing: 1.4,
+  textTransform: 'uppercase', display: 'inline-block', marginBottom: 16
+}}>{children}</span>;
+
+
+const AboutPage = () =>
+<PagePlaceholder>
+    <SectionLabel>about · 01</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      I build systems that other systems lean on.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px' }}>
+      CS at UCF. I spend most of my time in the seam between distributed systems and machine learning — the places where neither textbook fully covers what's happening.
+    </p>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px' }}>
+      Currently interested in inference scheduling, sparse retrieval, and the stubborn problem of making latency predictable.
+    </p>
+    <div style={{ display: 'flex', gap: 24, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
+      {[
+    ['based in', 'Orlando, FL'],
+    ['working on', 'inference infra'],
+    ['reading', 'Designing Data-Intensive Apps']].
+    map(([k, v]) =>
+    <div key={k}>
+          <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 }}>{k}</div>
+          <div style={{ fontSize: 13, color: '#1a1a1a' }}>{v}</div>
+        </div>
+    )}
+    </div>
+  </PagePlaceholder>;
+
+
+const projects = [
+{ year: '2026', name: 'pgrid', desc: 'Sharded vector index with adaptive replication', tags: ['rust', 'distributed'] },
+{ year: '2025', name: 'tinyserve', desc: 'Continuous batching for hobbyist GPU inference', tags: ['cuda', 'python'] },
+{ year: '2025', name: 'rezo', desc: 'A static site generator that respects your taste', tags: ['ts', 'cli'] },
+{ year: '2024', name: 'tilemap', desc: 'WebGL tilemap renderer used by two indie games', tags: ['webgl', 'open source'] }];
+
+
+const ProjectsPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>projects · {projects.length} shipped</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Things I've put into the world.
+    </h1>
+    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
+      {projects.map((p, i) =>
+    <M.li
+      key={p.name}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.25 + i * 0.06, duration: 0.4 }}
+      whileHover={{ x: 4 }}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '60px 1fr auto auto',
+        alignItems: 'baseline',
+        gap: 20,
+        padding: '18px 0',
+        borderTop: '1px solid rgba(0,0,0,0.08)',
+        cursor: 'pointer'
+      }}>
+      
+          <span className="mono" style={{ fontSize: 11, color: '#8a8580' }}>{p.year}</span>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: '#1a1a1a', marginBottom: 2 }}>{p.name}</div>
+            <div style={{ fontSize: 13, color: '#5a5a55' }}>{p.desc}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {p.tags.map((t) =>
+        <span key={t} className="mono" style={{
+          fontSize: 10, padding: '2px 7px', borderRadius: 4,
+          background: 'rgba(0,0,0,0.04)', color: '#5a5a55'
+        }}>{t}</span>
+        )}
+          </div>
+          <div style={{ color: accent, opacity: 0.7 }}>
+            <Icon name="arrow-up-right" size={14} />
+          </div>
+        </M.li>
+    )}
+    </ul>
+  </PagePlaceholder>;
+
+
+const ContactPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>contact · ↓</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 24px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Send a short note.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>
+      I read everything. I reply to most. The fastest path is email — I check it twice a day, no more.
+    </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)' }}>
+      {[
+    ['email', 'marcus@vale.dev', 'mail'],
+    ['github', 'github.com/marcusvale', 'github'],
+    ['signal', '+1 ··· request via email', 'circle']].
+    map(([k, v, icon]) =>
+    <div key={k} style={{
+      display: 'flex', alignItems: 'center', gap: 14,
+      padding: '14px 16px', background: '#fbfaf6'
+    }}>
+          <div style={{ color: '#8a8580' }}><Icon name={icon} size={14} /></div>
+          <span className="mono" style={{ fontSize: 11, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, width: 64 }}>{k}</span>
+          <span style={{ fontSize: 14, color: '#1a1a1a', fontFamily: 'Geist Mono, monospace' }}>{v}</span>
+        </div>
+    )}
+    </div>
+    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }} />
+      <span className="mono">currently accepting summer 2026 internships</span>
+    </div>
+  </PagePlaceholder>;
+
+
+// ----- App shell -----
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#10B981",
+  "showName": true,
+  "alwaysShowTooltips": false,
+  "background": "#E8E4DA"
+}/*EDITMODE-END*/;
+
+const accentSwatches = ['#10B981', '#F97316', '#6366F1', '#EC4899', '#FACC15'];
+const bgSwatches = ['#F4F1EC', '#EDE8DD', '#F5F5F2', '#E8E4DA', '#FFFFFF'];
+
+function App() {
+  const [route, setRoute] = useState('/');
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  const [hint, setHint] = useState(true);
+
+  // sync background CSS var
+  useEffect(() => {
+    document.documentElement.style.setProperty('--color-bg', tweaks.background);
+    document.documentElement.style.setProperty('--color-accent', tweaks.accent);
+  }, [tweaks.background, tweaks.accent]);
+
+  // hide hint after navigation
+  useEffect(() => {
+    if (route !== '/') setHint(false);
+  }, [route]);
+
+  // keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'a') {setRoute('/about');} else
+      if (k === 'p') {setRoute('/projects');} else
+      if (k === 'c') {setRoute('/contact');} else
+      if (k === 'h' || k === 'escape') {setRoute('/');} else
+      if (k === 'g') {
+        // simulate external nav
+        flashExternal('GitHub');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  const [flashMsg, setFlashMsg] = useState(null);
+  const flashExternal = (name) => {
+    setFlashMsg(`Opening ${name}…`);
+    setTimeout(() => setFlashMsg(null), 1400);
+  };
+
+  const handleNavigate = (item) => {
+    if (item.external) {
+      flashExternal(item.label || (item.id === 'resume' ? 'Resume PDF' : 'link'));
+      return;
+    }
+    setRoute(item.route);
+  };
+
+  const isLanding = route === '/';
+
+  return (
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden'
+    }}>
+      {/* Top metadata strip */}
+      <div style={{
+        position: 'fixed', top: 18, left: 22,
+        display: 'flex', alignItems: 'center', gap: 8,
+        zIndex: 5, fontFamily: 'Geist Mono, monospace',
+        fontSize: 11, color: '#8a8580', letterSpacing: 0.6
+      }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: tweaks.accent, boxShadow: `0 0 0 3px ${tweaks.accent}22` }} />
+        marcus.vale
+      </div>
+      <div style={{
+        position: 'fixed', top: 18, right: 22,
+        fontFamily: 'Geist Mono, monospace',
+        fontSize: 11, color: '#8a8580', letterSpacing: 0.6, zIndex: 5
+      }}>
+        v0.4.2 — orlando, fl
+      </div>
+
+      {/* Pill — anchored differently on landing vs inner */}
+      <LG>
+        <M.div
+          key="pill-anchor"
+          layout
+          transition={{ type: 'spring', stiffness: 280, damping: 32 }}
+          style={{
+            position: 'fixed',
+            left: 0, right: 0,
+            top: isLanding ? '50%' : 28,
+            transform: isLanding ? 'translateY(-50%)' : 'none',
+            display: 'flex',
+            justifyContent: 'center',
+            zIndex: 20,
+            pointerEvents: 'none'
+          }}>
+          
+          <M.div
+            key="pill-inner"
+            initial={isLanding ? { opacity: 0, y: 20, scale: 0.95 } : false}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            style={{ pointerEvents: 'auto' }}>
+            
+            <Pill route={route} onNavigate={handleNavigate} accent={tweaks.accent} showName={tweaks.showName} />
+          </M.div>
+        </M.div>
+      </LG>
+
+      {/* Inner page content */}
+      <AP mode="wait">
+        {!isLanding &&
+        <M.div
+          key={route}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            position: 'absolute',
+            top: 130, left: 0, right: 0, bottom: 0,
+            padding: '40px 0 40px',
+            overflowY: 'auto',
+            zIndex: 2
+          }}>
+          
+            {route === '/about' && <AboutPage />}
+            {route === '/projects' && <ProjectsPage accent={tweaks.accent} />}
+            {route === '/contact' && <ContactPage accent={tweaks.accent} />}
+
+            {/* back hint */}
+            <div style={{ maxWidth: 640, margin: '40px auto 0', padding: '0 32px' }}>
+              <button
+              onClick={() => setRoute('/')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                fontSize: 12, color: '#8a8580',
+                fontFamily: 'Geist Mono, monospace'
+              }}>
+              
+                <Icon name="arrow-left" size={12} />
+                back home <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#8a8580', borderColor: 'rgba(0,0,0,0.08)' }}>esc</span>
+              </button>
+            </div>
+          </M.div>
+        }
+      </AP>
+
+      {/* Landing-only ambient hint below pill */}
+      <AP>
+        {isLanding && hint &&
+        <M.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          style={{
+            position: 'fixed',
+            left: '50%', top: 'calc(50% + 90px)',
+            transform: 'translateX(-50%)',
+            display: 'flex', alignItems: 'center', gap: 10,
+            fontFamily: 'Geist Mono, monospace',
+            fontSize: 11, color: '#8a8580',
+            zIndex: 5
+          }}>
+          
+            <span>navigate with</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>A</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>P</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>C</span>
+            <span>or click the pill</span>
+          </M.div>
+        }
+      </AP>
+
+      {/* External link toast */}
+      <AP>
+        {flashMsg &&
+        <M.div
+          initial={{ opacity: 0, y: 20, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.96 }}
+          transition={{ duration: 0.25 }}
+          style={{
+            position: 'fixed', bottom: 32, left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '10px 16px',
+            background: '#0a0a0a', color: 'white',
+            borderRadius: 999, fontSize: 12,
+            fontFamily: 'Geist Mono, monospace',
+            boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            zIndex: 50
+          }}>
+          
+            <Icon name="external" size={12} />
+            {flashMsg}
+          </M.div>
+        }
+      </AP>
+
+      {/* Tweaks panel */}
+      <window.TweaksPanel title="Tweaks">
+        <window.TweakSection title="Palette">
+          <window.TweakColor
+            label="Accent"
+            value={tweaks.accent}
+            options={accentSwatches}
+            onChange={(v) => setTweak('accent', v)} />
+          
+          <window.TweakColor
+            label="Background"
+            value={tweaks.background}
+            options={bgSwatches}
+            onChange={(v) => setTweak('background', v)} />
+          
+        </window.TweakSection>
+        <window.TweakSection title="Pill">
+          <window.TweakToggle
+            label="Show 'Hello, I'm' label"
+            value={tweaks.showName}
+            onChange={(v) => setTweak('showName', v)} />
+          
+        </window.TweakSection>
+        <window.TweakSection title="Navigation">
+          <window.TweakButton onClick={() => setRoute('/')}>→ Home</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/about')}>→ About</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/projects')}>→ Projects</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/contact')}>→ Contact</window.TweakButton>
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </div>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
