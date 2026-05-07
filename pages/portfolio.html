@@ -386,10 +386,9 @@ const AboutPage = () =>
 
 
 const projects = [
-{ year: '2026', name: 'pgrid', desc: 'Sharded vector index with adaptive replication', tags: ['rust', 'distributed'] },
-{ year: '2025', name: 'tinyserve', desc: 'Continuous batching for hobbyist GPU inference', tags: ['cuda', 'python'] },
-{ year: '2025', name: 'rezo', desc: 'A static site generator that respects your taste', tags: ['ts', 'cli'] },
-{ year: '2024', name: 'tilemap', desc: 'WebGL tilemap renderer used by two indie games', tags: ['webgl', 'open source'] }];
+{ year: '2025', name: 'Miniredis CPP', url: 'https://github.com/polter-dev/miniredis_cpp', desc: 'Redis-like in-memory key-value store written from scratch in C++. TCP server on POSIX sockets with a poll()-based event loop, RESP3 protocol parsing with per-client read buffers for partial reads, and a custom chained hash table with incremental rehashing to avoid resize latency spikes. Supports GET, SET, PING, ECHO.', tags: ['C++', 'POSIX sockets', 'RESP3', 'systems'] },
+{ year: '2026', name: 'Nudge', url: 'https://github.com/polter-dev/Nudge', desc: 'Student accountability platform built on the T3 stack (Next.js, TypeScript, tRPC, Supabase) with a six-person team. Owned the backend: built the auth router with Zod-validated .edu email signup, protectedProcedure middleware against Supabase Auth, and orphaned-user rollback on failed profile inserts. Designed and shipped the full Postgres schema from ERD.', tags: ['TypeScript', 'tRPC', 'Supabase', 'Next.js', 'Zod'] },
+{ year: '2026', name: 'Course Scrapper', url: 'https://github.com/polter-dev/course-watcher', desc: "Polls Valencia College's Banner Self-Service API and sends Discord notifications when seats open in full course sections. Reverse-engineered the undocumented JSON endpoints and session flow, including a chk_open_only parameter that acts as an inverter and is cached per session \u2014 requiring two parallel HTTP sessions to fetch the full section list. Hardened with atomic state writes, file-locking against duplicate instances, and exponential backoff with jitter. Deployed 24/7 via macOS launchd with auto-restart on crash.", tags: ['Python', 'Banner SSB', 'Discord webhooks', 'launchd', 'systems'] }];
 
 
 const ProjectsPage = ({ accent }) =>
@@ -406,30 +405,31 @@ const ProjectsPage = ({ accent }) =>
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 + i * 0.06, duration: 0.4 }}
       whileHover={{ x: 4 }}
+      onClick={() => window.open(p.url, '_blank', 'noopener')}
       style={{
         display: 'grid',
-        gridTemplateColumns: '60px 1fr auto auto',
-        alignItems: 'baseline',
+        gridTemplateColumns: '54px 1fr auto',
+        alignItems: 'start',
         gap: 20,
-        padding: '18px 0',
+        padding: '22px 0',
         borderTop: '1px solid rgba(0,0,0,0.08)',
         cursor: 'pointer'
       }}>
       
-          <span className="mono" style={{ fontSize: 11, color: '#8a8580' }}>{p.year}</span>
+          <span className="mono" style={{ fontSize: 11, color: '#8a8580', paddingTop: 4 }}>{p.year}</span>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 500, color: '#1a1a1a', marginBottom: 2 }}>{p.name}</div>
-            <div style={{ fontSize: 13, color: '#5a5a55' }}>{p.desc}</div>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ fontSize: 16, fontWeight: 500, color: '#1a1a1a', marginBottom: 6 }}>{p.name}</div>
+            <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {p.tags.map((t) =>
         <span key={t} className="mono" style={{
           fontSize: 10, padding: '2px 7px', borderRadius: 4,
           background: 'rgba(0,0,0,0.04)', color: '#5a5a55'
         }}>{t}</span>
         )}
+            </div>
           </div>
-          <div style={{ color: accent, opacity: 0.7 }}>
+          <div style={{ color: accent, opacity: 0.7, paddingTop: 4 }}>
             <Icon name="arrow-up-right" size={14} />
           </div>
         </M.li>
