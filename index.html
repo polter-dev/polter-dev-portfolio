@@ -928,29 +928,40 @@ function App() {
         }
       </AP>
 
-      {/* Landing-only ambient hint below pill */}
+      {/* Ambient keyboard hint */}
       <AP>
-        {isLanding && hint &&
+        {((isLanding && hint) || route === '/stack') &&
         <M.div
+          key="kbd-hint"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, delay: 1.2 }}
+          transition={{ duration: 0.5, delay: isLanding ? 1.0 : 0.3 }}
+          exit={{ opacity: 0, y: -4, transition: { duration: 0.18, ease: 'easeOut' } }}
           style={{
             position: 'fixed',
-            left: '50%', top: 'calc(50% + 90px)',
+            left: '50%',
+            bottom: isLanding ? 'auto' : 28,
+            top: isLanding ? 'calc(50% + 90px)' : 'auto',
             transform: 'translateX(-50%)',
-            display: 'flex', alignItems: 'center', gap: 10,
+            display: 'flex', alignItems: 'center', gap: 8,
             fontFamily: 'Geist Mono, monospace',
             fontSize: 11, color: '#8a8580',
-            zIndex: 5
+            zIndex: 5,
+            padding: isLanding ? 0 : '8px 14px',
+            background: isLanding ? 'transparent' : 'rgba(251,250,246,0.85)',
+            backdropFilter: isLanding ? 'none' : 'blur(8px)',
+            border: isLanding ? 'none' : '1px solid rgba(0,0,0,0.06)',
+            borderRadius: 999,
           }}>
           
-            <span>navigate with</span>
+            <span>navigate</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>A</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>P</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>S</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>R</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>C</span>
-            <span>or click the pill</span>
+            <span>· esc to home · or click the pill</span>
           </M.div>
         }
       </AP>
