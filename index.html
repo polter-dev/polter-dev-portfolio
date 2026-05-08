@@ -487,26 +487,127 @@ const StackPage = ({ accent }) =>
   </PagePlaceholder>;
 
 
+// Resume content as data — rendered natively in HTML, no PDF viewer chrome
+const resumeData = {
+  name: 'Marcus Ruth',
+  links: [
+    { label: 'linkedin.com/in/marcusruth', href: 'https://linkedin.com/in/marcusruth' },
+    { label: 'github.com/polter-dev',      href: 'https://github.com/polter-dev' },
+  ],
+  education: [
+    { school: 'University of Central Florida', degree: 'Bachelor of Science in Computer Science', dates: 'Aug. 2024 – May 2027', loc: 'Orlando, FL' },
+    { school: 'Valencia College',              degree: 'Associates of Arts — General Studies',     dates: 'Aug. 2022 – May 2024', loc: 'Orlando, FL' },
+  ],
+  experience: [
+    {
+      org: 'University of Central Florida',
+      role: 'Teaching Assistant — Data Structures & Algorithms (COP 3502C)',
+      dates: 'Jan 2025 – Present', loc: 'Orlando, FL',
+      bullets: [
+        'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables), instructing over 100 students per semester.',
+        'Designed programming assignments targeting specific learning goals such as recursive thinking, dynamic memory management, and reasoning about augmented data structures.',
+        'Grade assignments and provide constructive feedback to help students improve algorithmic problem-solving and debugging of C-based implementations.',
+      ],
+    },
+    {
+      org: 'Downtown Diner Celebration',
+      role: 'Food Server',
+      dates: 'Jan 2024 – Present', loc: 'Celebration, FL',
+      bullets: [
+        'Directing tourists to desired areas to travel to in local vicinity.',
+        'Exceptional multitasking skills due to larger responsibility in restaurant.',
+        'Efficiently managing time between customer requests and job responsibilities.',
+      ],
+    },
+    {
+      org: 'Mindhome',
+      role: 'Software Engineer — Internship',
+      dates: 'Dec 2022 – Feb 2023', loc: 'Remote',
+      bullets: [
+        'Completed ROS2 training utilizing Python, building foundational skills in AI and robotics programming.',
+        'Contributed to backend development in Ruby, implementing API endpoints and assisting with database integration to support core platform functionality.',
+        'Participated in code reviews and collaborated with senior engineers to refine application logic and improve system reliability.',
+        'Developed a holistic understanding of software development methodologies including Agile workflows and version control practices.',
+      ],
+    },
+  ],
+  projects: [
+    {
+      name: 'Nudge',
+      stack: 'Next.js, TypeScript, tRPC, Zod, Supabase, MediaPipe, LiveKit, Tailwind CSS',
+      bullets: [
+        'Developing a student accountability platform that pairs college students for live video-call study sessions with real-time distraction tracking.',
+        'Integrated MediaPipe computer vision on the client side to detect off-screen gaze and phone usage during study sessions.',
+      ],
+    },
+  ],
+};
+
+const ResumeSection = ({ label, children }) => (
+  <section style={{ marginBottom: 28 }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
+    }}>
+      <span className="mono" style={{
+        fontSize: 11, color: '#1a1a1a', letterSpacing: 1.6,
+        textTransform: 'uppercase', fontWeight: 500,
+      }}>{label}</span>
+      <span style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.12)' }}/>
+    </div>
+    {children}
+  </section>
+);
+
+const ResumeRow = ({ left, right, sub, subRight, children }) => (
+  <div style={{ marginBottom: children ? 14 : 10 }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
+      <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1a1a1a' }}>{left}</span>
+      <span className="mono" style={{ fontSize: 11, color: '#5a5a55' }}>{right}</span>
+    </div>
+    {(sub || subRight) && (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginTop: 2 }}>
+        <span style={{ fontSize: 13, color: '#5a5a55', fontStyle: 'italic' }}>{sub}</span>
+        <span className="mono" style={{ fontSize: 11, color: '#5a5a55' }}>{subRight}</span>
+      </div>
+    )}
+    {children && (
+      <ul style={{
+        margin: '8px 0 0', padding: 0, listStyle: 'none',
+        display: 'flex', flexDirection: 'column', gap: 5,
+      }}>
+        {children.map((b, i) => (
+          <li key={i} style={{
+            fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty',
+            paddingLeft: 16, position: 'relative',
+          }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: '#8a8580' }}>·</span>
+            {b}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
 const ResumePage = ({ accent }) => {
-  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   return (
     <M.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-      style={{ maxWidth: 980, margin: '0 auto', padding: '0 32px' }}
+      style={{ maxWidth: 820, margin: '0 auto', padding: '0 32px' }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
         <div>
-          <SectionLabel>resume · pdf</SectionLabel>
+          <SectionLabel>resume · {new Date().getFullYear()}</SectionLabel>
           <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: 0, lineHeight: 1.1, color: '#1a1a1a' }}>
             Resume.
           </h1>
         </div>
         <a
           href="resume.pdf"
-          download="polter-dev-resume.pdf"
+          download="marcus-ruth-resume.pdf"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             height: 38, padding: '0 16px',
@@ -521,54 +622,93 @@ const ResumePage = ({ accent }) => {
         </a>
       </div>
 
-      {isMobile ? (
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 16, padding: '64px 24px',
-          background: '#fbfaf6',
-          border: '1px solid rgba(0,0,0,0.08)',
-          borderRadius: 14,
-          textAlign: 'center',
-        }}>
-          <div style={{ color: '#8a8580' }}><Icon name="external" size={22} /></div>
-          <div style={{ fontSize: 14, color: '#3a3a36', maxWidth: 320, lineHeight: 1.5 }}>
-            PDFs preview poorly on mobile. Open in a new tab for the best view.
+      {/* Resume sheet */}
+      <article style={{
+        background: '#fbfaf6',
+        border: '1px solid rgba(0,0,0,0.08)',
+        borderRadius: 14,
+        padding: '40px 48px 44px',
+        boxShadow: '0 12px 40px rgba(10,10,10,0.06)',
+      }}>
+        {/* Header */}
+        <header style={{ textAlign: 'center', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+          <h2 style={{
+            fontSize: 32, fontWeight: 500, letterSpacing: -0.8,
+            margin: '0 0 8px', color: '#0a0a0a',
+          }}>{resumeData.name}</h2>
+          <div style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 14, justifyContent: 'center' }}>
+            {resumeData.links.map((l, i) => (
+              <React.Fragment key={l.href}>
+                {i > 0 && <span style={{ color: '#bdbab2' }}>·</span>}
+                <a href={l.href} target="_blank" rel="noopener"
+                   className="mono"
+                   style={{ fontSize: 12, color: '#3a3a36', borderBottom: `1px solid ${accent}66` }}>
+                  {l.label}
+                </a>
+              </React.Fragment>
+            ))}
           </div>
-          <a
-            href="resume.pdf"
-            target="_blank"
-            rel="noopener"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              height: 40, padding: '0 18px',
-              borderRadius: 999,
-              background: '#0a0a0a', color: 'white',
-              fontWeight: 500, fontSize: 13,
-              fontFamily: 'Geist Mono, monospace',
-              letterSpacing: 0.2,
-            }}
-          >
-            <Icon name="external" size={13} />
-            <span>View PDF</span>
-          </a>
-        </div>
-      ) : (
-        <div style={{
-          width: '100%',
-          height: 'min(78vh, 1100px)',
-          background: '#fbfaf6',
-          border: '1px solid rgba(0,0,0,0.08)',
-          borderRadius: 14,
-          overflow: 'hidden',
-          boxShadow: '0 12px 40px rgba(10,10,10,0.06)',
+        </header>
+
+        <ResumeSection label="Education">
+          {resumeData.education.map(e => (
+            <ResumeRow
+              key={e.school}
+              left={e.school}
+              right={e.dates}
+              sub={e.degree}
+              subRight={e.loc}
+            />
+          ))}
+        </ResumeSection>
+
+        <ResumeSection label="Relevant Experience">
+          {resumeData.experience.map(x => (
+            <ResumeRow
+              key={x.org + x.role}
+              left={x.org}
+              right={x.dates}
+              sub={x.role}
+              subRight={x.loc}
+            >
+              {x.bullets}
+            </ResumeRow>
+          ))}
+        </ResumeSection>
+
+        <ResumeSection label="Projects">
+          {resumeData.projects.map(p => (
+            <div key={p.name} style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+                <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1a1a1a' }}>{p.name}</span>
+                <span style={{ color: '#bdbab2' }}>|</span>
+                <span className="mono" style={{ fontSize: 11.5, color: '#5a5a55', fontStyle: 'italic' }}>
+                  {p.stack}
+                </span>
+              </div>
+              <ul style={{ margin: '6px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {p.bullets.map((b, i) => (
+                  <li key={i} style={{
+                    fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty',
+                    paddingLeft: 16, position: 'relative',
+                  }}>
+                    <span style={{ position: 'absolute', left: 0, top: 0, color: '#8a8580' }}>·</span>
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </ResumeSection>
+
+        <div className="mono" style={{
+          marginTop: 28, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.06)',
+          fontSize: 10, color: '#8a8580', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
         }}>
-          <iframe
-            src="resume.pdf#view=FitH"
-            title="Resume PDF"
-            style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-          />
+          <span>polter-dev · marcus ruth</span>
+          <span>last updated · {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
         </div>
-      )}
+      </article>
     </M.div>
   );
 };
