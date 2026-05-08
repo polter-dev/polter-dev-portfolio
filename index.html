@@ -930,7 +930,7 @@ function App() {
 
       {/* Ambient keyboard hint */}
       <AP>
-        {((isLanding && hint) || route === '/stack') &&
+        {(isLanding && hint) &&
         <M.div
           key="kbd-hint"
           initial={{ opacity: 0, y: 8 }}
