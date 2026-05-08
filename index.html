@@ -134,6 +134,8 @@ const Icon = ({ name, size = 16 }) => {
       return <svg {...props}><circle cx="12" cy="12" r="3" /></svg>;
     case "layers":
       return <svg {...props}><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>;
+    case "sparkle":
+      return <svg {...props}><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/><path d="M5.6 5.6l4.2 4.2M14.2 14.2l4.2 4.2M18.4 5.6l-4.2 4.2M9.8 14.2l-4.2 4.2"/></svg>;
     case "moon":
       return <svg {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
     default:return null;
@@ -236,23 +238,23 @@ const NavIconButton = ({ item, active, compact, onNavigate, accent }) => {
 };
 
 // ----- The Pill -----
-const Pill = ({ route, onNavigate, accent, showName, scale }) => {
-  const compact = route !== '/';
-  const showLabel = showName && !compact;
+const Pill = ({ route, onNavigate, accent, showName, forceCompact, tiny }) => {
+  const compact = route !== '/' || forceCompact;
+  const showLabel = showName && !compact && !tiny;
 
   return (
     <M.div
       layout
       layoutId="main-pill"
-      transition={{ type: 'spring', stiffness: 280, damping: 32, mass: 0.9 }}
+      transition={{ type: 'spring', stiffness: 55, damping: 17, mass: 1.5 }}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: compact ? 10 : 14,
-        padding: compact ? '6px 6px 6px 10px' : '8px 8px 8px 12px',
+        gap: tiny ? 6 : (compact ? 10 : 14),
+        padding: tiny ? '5px' : (compact ? '6px 6px 6px 10px' : '8px 8px 8px 12px'),
         background: 'var(--color-surface)',
         borderRadius: 999,
-        boxShadow: compact ?
+        boxShadow: compact || tiny ?
         '0 4px 16px rgba(10,10,10,0.12), 0 1px 2px rgba(0,0,0,0.06)' :
         '0 12px 40px rgba(10,10,10,0.18), 0 2px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
         border: '1px solid rgba(255,255,255,0.06)',
@@ -260,7 +262,7 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
       }}>
       
       <M.div key="avatar" layout="position">
-        <Avatar size={compact ? 26 : 36} />
+        <Avatar size={tiny ? 34 : (compact ? 26 : 36)} />
       </M.div>
 
       {showLabel &&
@@ -278,7 +280,7 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
         </M.div>
       }
 
-      {compact &&
+      {compact && !tiny &&
       <M.span
         key="compact-name"
         layout="position"
@@ -288,9 +290,9 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
         </M.span>
       }
 
-      <M.div key="div1" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />
+      {!tiny && <M.div key="div1" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />}
 
-      <M.div key="nav" layout="position" style={{ display: 'flex', gap: compact ? 2 : 4, alignItems: 'center' }}>
+      {!tiny && <M.div key="nav" layout="position" style={{ display: 'flex', gap: compact ? 2 : 4, alignItems: 'center' }}>
         {navItems.map((item) =>
         <NavIconButton
           key={item.id}
@@ -301,9 +303,9 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
           accent={accent} />
 
         )}
-      </M.div>
+      </M.div>}
 
-      <M.div key="div2" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />
+      {!tiny && <M.div key="div2" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />}
 
       <M.button
         key="resume"
@@ -312,17 +314,18 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.96 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        aria-label="View Resume"
+        aria-label={tiny ? 'Open portfolio' : 'View Resume'}
         style={{
-          height: compact ? 32 : 36,
-          padding: compact ? '0 12px' : '0 16px',
+          height: tiny ? 34 : (compact ? 32 : 36),
+          width: tiny ? 34 : 'auto',
+          padding: tiny ? 0 : (compact ? '0 12px' : '0 16px'),
           borderRadius: 999,
           background: accent,
           color: '#062b1f',
           fontWeight: 600,
           fontSize: compact ? 12 : 13,
           letterSpacing: -0.1,
-          display: 'flex', alignItems: 'center', gap: 6,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           position: 'relative',
           overflow: 'hidden',
           boxShadow: `0 0 0 1px ${accent}, 0 4px 14px ${accent}55`
@@ -335,8 +338,12 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
           animation: 'shimmer 2.8s linear infinite',
           pointerEvents: 'none'
         }} />
-        <Icon name="download" size={compact ? 12 : 14} />
-        <span style={{ position: 'relative' }}>Resume</span>
+        {tiny ? (
+          <Icon name="sparkle" size={14} />
+        ) : (<>
+          <Icon name="download" size={compact ? 12 : 14} />
+          <span style={{ position: 'relative' }}>Resume</span>
+        </>)}
       </M.button>
     </M.div>);
 
@@ -761,6 +768,7 @@ function App() {
   const [route, setRoute] = useState('/');
   const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
   const [hint, setHint] = useState(true);
+  const [pillHover, setPillHover] = useState(false);
 
   // sync background CSS var
   useEffect(() => {
@@ -861,9 +869,11 @@ function App() {
             initial={isLanding ? { opacity: 0, y: 20, scale: 0.95 } : false}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            style={{ pointerEvents: 'auto' }}>
+            style={{ pointerEvents: 'auto' }}
+            onMouseEnter={() => isLanding && setPillHover(true)}
+            onMouseLeave={() => setPillHover(false)}>
             
-            <Pill route={route} onNavigate={handleNavigate} accent={tweaks.accent} showName={tweaks.showName} />
+            <Pill route={route} onNavigate={handleNavigate} accent={tweaks.accent} showName={tweaks.showName} forceCompact={isLanding && !pillHover} tiny={isLanding && !pillHover} />
           </M.div>
         </M.div>
       </LG>
