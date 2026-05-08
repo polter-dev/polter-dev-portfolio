@@ -89,7 +89,7 @@
 <body>
 <div id="root"></div>
 
-<script type="text/babel" src="components/tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel">
 
 
@@ -147,7 +147,7 @@ const Avatar = ({ size = 32 }) =>
   flexShrink: 0,
   boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.4)',
   background: '#f4f1ec',
-  backgroundImage: 'url(images/avatar.jpg)',
+  backgroundImage: 'url(avatar.jpg)',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   position: 'relative'
@@ -308,11 +308,11 @@ const Pill = ({ route, onNavigate, accent, showName, scale }) => {
       <M.button
         key="resume"
         layout="position"
-        onClick={() => onNavigate({ id: 'resume', external: true, route: '__resume' })}
+        onClick={() => onNavigate({ id: 'resume', route: '/resume' })}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.96 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        aria-label="Download Resume"
+        aria-label="View Resume"
         style={{
           height: compact ? 32 : 36,
           padding: compact ? '0 12px' : '0 16px',
@@ -487,6 +487,93 @@ const StackPage = ({ accent }) =>
   </PagePlaceholder>;
 
 
+const ResumePage = ({ accent }) => {
+  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return (
+    <M.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      style={{ maxWidth: 980, margin: '0 auto', padding: '0 32px' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div>
+          <SectionLabel>resume · pdf</SectionLabel>
+          <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: 0, lineHeight: 1.1, color: '#1a1a1a' }}>
+            Resume.
+          </h1>
+        </div>
+        <a
+          href="resume.pdf"
+          download="polter-dev-resume.pdf"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            height: 38, padding: '0 16px',
+            borderRadius: 999,
+            background: accent, color: '#062b1f',
+            fontWeight: 600, fontSize: 13, letterSpacing: -0.1,
+            boxShadow: `0 0 0 1px ${accent}, 0 4px 14px ${accent}55`,
+          }}
+        >
+          <Icon name="download" size={14} />
+          <span>Download PDF</span>
+        </a>
+      </div>
+
+      {isMobile ? (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16, padding: '64px 24px',
+          background: '#fbfaf6',
+          border: '1px solid rgba(0,0,0,0.08)',
+          borderRadius: 14,
+          textAlign: 'center',
+        }}>
+          <div style={{ color: '#8a8580' }}><Icon name="external" size={22} /></div>
+          <div style={{ fontSize: 14, color: '#3a3a36', maxWidth: 320, lineHeight: 1.5 }}>
+            PDFs preview poorly on mobile. Open in a new tab for the best view.
+          </div>
+          <a
+            href="resume.pdf"
+            target="_blank"
+            rel="noopener"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              height: 40, padding: '0 18px',
+              borderRadius: 999,
+              background: '#0a0a0a', color: 'white',
+              fontWeight: 500, fontSize: 13,
+              fontFamily: 'Geist Mono, monospace',
+              letterSpacing: 0.2,
+            }}
+          >
+            <Icon name="external" size={13} />
+            <span>View PDF</span>
+          </a>
+        </div>
+      ) : (
+        <div style={{
+          width: '100%',
+          height: 'min(78vh, 1100px)',
+          background: '#fbfaf6',
+          border: '1px solid rgba(0,0,0,0.08)',
+          borderRadius: 14,
+          overflow: 'hidden',
+          boxShadow: '0 12px 40px rgba(10,10,10,0.06)',
+        }}>
+          <iframe
+            src="resume.pdf#view=FitH"
+            title="Resume PDF"
+            style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+          />
+        </div>
+      )}
+    </M.div>
+  );
+};
+
+
 const ContactPage = ({ accent }) =>
 <PagePlaceholder>
     <SectionLabel>contact · ↓</SectionLabel>
@@ -555,6 +642,7 @@ function App() {
       if (k === 'a') {setRoute('/about');} else
       if (k === 'p') {setRoute('/projects');} else
       if (k === 's') {setRoute('/stack');} else
+      if (k === 'r') {setRoute('/resume');} else
       if (k === 'c') {setRoute('/contact');} else
       if (k === 'h' || k === 'escape') {setRoute('/');} else
       if (k === 'g') {
@@ -660,6 +748,7 @@ function App() {
             {route === '/about' && <AboutPage />}
             {route === '/projects' && <ProjectsPage accent={tweaks.accent} />}
             {route === '/stack' && <StackPage accent={tweaks.accent} />}
+            {route === '/resume' && <ResumePage accent={tweaks.accent} />}
             {route === '/contact' && <ContactPage accent={tweaks.accent} />}
 
             {/* back hint */}
@@ -761,6 +850,7 @@ function App() {
           <window.TweakButton onClick={() => setRoute('/about')}>→ About</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/projects')}>→ Projects</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/stack')}>→ Stack</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/resume')}>→ Resume</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/contact')}>→ Contact</window.TweakButton>
         </window.TweakSection>
       </window.TweaksPanel>
