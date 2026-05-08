@@ -246,7 +246,7 @@ const Pill = ({ route, onNavigate, accent, showName, forceCompact, tiny }) => {
     <M.div
       layout
       layoutId="main-pill"
-      transition={{ type: 'tween', duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+      transition={{ type: 'tween', duration: 0.42, ease: [0.32, 0.72, 0, 1] }}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -313,7 +313,7 @@ const Pill = ({ route, onNavigate, accent, showName, forceCompact, tiny }) => {
         onClick={() => onNavigate({ id: 'resume', route: '/resume' })}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.96 }}
-        transition={{ layout: { type: 'tween', duration: 0.55, ease: [0.32, 0.72, 0, 1] }, default: { type: 'spring', stiffness: 500, damping: 30 } }}
+        transition={{ layout: { type: 'tween', duration: 0.42, ease: [0.32, 0.72, 0, 1] }, default: { type: 'spring', stiffness: 500, damping: 30 } }}
         aria-label={tiny ? 'Open portfolio' : 'View Resume'}
         style={{
           height: tiny ? 34 : (compact ? 32 : 36),
@@ -611,7 +611,7 @@ const ResumePage = ({ accent }) => {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.3, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
       style={{ maxWidth: 820, margin: '0 auto', padding: '0 32px' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -888,14 +888,14 @@ function App() {
       </LG>
 
       {/* Inner page content */}
-      <AP mode="wait">
+      <AP mode="popLayout">
         {!isLanding &&
         <M.div
           key={route}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.18 }}
           style={{
             position: 'absolute',
             top: 130, left: 0, right: 0, bottom: 0,
