@@ -309,11 +309,11 @@ const Pill = ({ route, onNavigate, accent, showName, forceCompact, tiny }) => {
 
       <M.button
         key="resume"
-        layout="position"
+        layout
         onClick={() => onNavigate({ id: 'resume', route: '/resume' })}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.96 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        transition={{ layout: { type: 'spring', stiffness: 55, damping: 17, mass: 1.5 }, default: { type: 'spring', stiffness: 500, damping: 30 } }}
         aria-label={tiny ? 'Open portfolio' : 'View Resume'}
         style={{
           height: tiny ? 34 : (compact ? 32 : 36),
@@ -339,11 +339,20 @@ const Pill = ({ route, onNavigate, accent, showName, forceCompact, tiny }) => {
           pointerEvents: 'none'
         }} />
         {tiny ? (
-          <Icon name="sparkle" size={14} />
-        ) : (<>
-          <Icon name="download" size={compact ? 12 : 14} />
-          <span style={{ position: 'relative' }}>Resume</span>
-        </>)}
+          <M.span layout="position" key="tiny-mark" style={{ display: 'flex' }}>
+            <Icon name="sparkle" size={14} />
+          </M.span>
+        ) : (
+          <M.span layout="position" key="full-mark" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="download" size={compact ? 12 : 14} />
+            <M.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.35, delay: 0.25 }}
+              style={{ position: 'relative', whiteSpace: 'nowrap' }}
+            >Resume</M.span>
+          </M.span>
+        )}
       </M.button>
     </M.div>);
 
