@@ -561,8 +561,25 @@ const resumeData = {
       bullets: [
         'Developing a student accountability platform that pairs college students for live video-call study sessions with real-time distraction tracking.',
         'Integrated MediaPipe computer vision on the client side to detect off-screen gaze and phone usage during study sessions.',
+        'Designed backend architecture with Supabase for authentication (.edu email gating), Postgres database, and realtime session synchronization.',
+        'Implemented solo and duo session modes with structured timer workflows and AI-generated end-of-session productivity reports.',
       ],
     },
+    {
+      name: 'miniredis',
+      stack: 'C++, POSIX sockets, systems programming',
+      bullets: [
+        'Built a Redis-like in-memory key–value store from scratch using modern C++ and POSIX sockets.',
+        'Implemented event-driven TCP server with poll() capable of handling multiple concurrent client connections.',
+        'Developed RESP protocol serialization and core commands (SET, GET, PING, ECHO) with per-client buffering.',
+      ],
+    },
+  ],
+  skills: [
+    { label: 'Languages',       items: 'Python, Java, C/C++, Go, TypeScript, JavaScript, SQL' },
+    { label: 'Web',             items: 'Next.js, React, tRPC, Zod, Supabase, Postgres' },
+    { label: 'Libraries',       items: 'NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, Nixtla' },
+    { label: 'Developer Tools', items: 'Git, VS Code, Unix/Linux, AWS, PostgreSQL, Neovim' },
   ],
 };
 
@@ -722,6 +739,17 @@ const ResumePage = ({ accent }) => {
               </ul>
             </div>
           ))}
+        </ResumeSection>
+
+        <ResumeSection label="Technical Skills">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {resumeData.skills.map(s => (
+              <div key={s.label} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty' }}>
+                <span style={{ fontWeight: 600, color: '#1a1a1a', minWidth: 120 }}>{s.label}:</span>
+                <span>{s.items}</span>
+              </div>
+            ))}
+          </div>
         </ResumeSection>
 
         <div className="mono" style={{
