@@ -140,6 +140,8 @@ const Icon = ({ name, size = 16 }) => {
       return <svg {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
     case "linkedin":
       return <svg {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>;
+    case "message":
+      return <svg {...props}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>;
     default:return null;
   }
 };
@@ -163,6 +165,7 @@ const navItems = [
 { id: 'about', label: 'About', icon: 'user', route: '/about', key: 'a' },
 { id: 'projects', label: 'Projects', icon: 'code', route: '/projects', key: 'p' },
 { id: 'stack', label: 'Stack', icon: 'layers', route: '/stack', key: 's' },
+{ id: 'chat', label: 'Ask Me', icon: 'message', route: '/chat', key: 'k' },
 { id: 'contact', label: 'Contact', icon: 'mail', route: '/contact', key: 'c' },
 { id: 'github', label: 'GitHub', icon: 'github', route: '__external', url: 'https://github.com/polter-dev', key: 'g', external: true }];
 
@@ -387,7 +390,7 @@ const SectionLabel = ({ children }) =>
 
 const AboutPage = () =>
 <PagePlaceholder>
-    <SectionLabel>about · 01</SectionLabel>
+    <SectionLabel>about</SectionLabel>
     <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
       Hi, I'm Marcus.
     </h1>
@@ -765,6 +768,29 @@ const ResumePage = ({ accent }) => {
 };
 
 
+const ChatPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>ask me · beta</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Under construction.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px', maxWidth: 480, textWrap: 'pretty' }}>
+      A LLM-powered chat trained on my background, so you can ask the questions you'd normally save for a call. Come back soon when it's ready.
+    </p>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '14px 16px',
+      background: '#fbfaf6',
+      border: '1px dashed rgba(0,0,0,0.15)',
+      borderRadius: 12,
+      maxWidth: 480,
+    }}>
+      <span style={{ width: 8, height: 8, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
+      <span className="mono" style={{ fontSize: 12, color: '#5a5a55' }}>status: wiring it up · coming soon</span>
+    </div>
+  </PagePlaceholder>;
+
+
 const ContactPage = ({ accent }) =>
 <PagePlaceholder>
     <SectionLabel>contact · ↓</SectionLabel>
@@ -842,6 +868,7 @@ function App() {
       if (k === 'p') {setRoute('/projects');} else
       if (k === 's') {setRoute('/stack');} else
       if (k === 'r') {setRoute('/resume');} else
+      if (k === 'k') {setRoute('/chat');} else
       if (k === 'c') {setRoute('/contact');} else
       if (k === 'h' || k === 'escape') {setRoute('/');} else
       if (k === 'g') {
@@ -949,6 +976,7 @@ function App() {
             {route === '/about' && <AboutPage />}
             {route === '/projects' && <ProjectsPage accent={tweaks.accent} />}
             {route === '/stack' && <StackPage accent={tweaks.accent} />}
+            {route === '/chat' && <ChatPage accent={tweaks.accent} />}
             {route === '/resume' && <ResumePage accent={tweaks.accent} />}
             {route === '/contact' && <ContactPage accent={tweaks.accent} />}
 
@@ -1001,6 +1029,7 @@ function App() {
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>A</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>P</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>S</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>K</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>R</span>
             <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>C</span>
             <span>· esc to home · or click the pill</span>
@@ -1062,6 +1091,7 @@ function App() {
           <window.TweakButton onClick={() => setRoute('/about')}>→ About</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/projects')}>→ Projects</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/stack')}>→ Stack</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/chat')}>→ Ask Me</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/resume')}>→ Resume</window.TweakButton>
           <window.TweakButton onClick={() => setRoute('/contact')}>→ Contact</window.TweakButton>
         </window.TweakSection>
