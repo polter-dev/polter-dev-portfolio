@@ -89,6 +89,39 @@
     color: #b0aca4;
     pointer-events: none;
   }
+  .msg-editor a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .fmt-bar {
+    opacity: 0.32;
+    transition: opacity 0.18s ease;
+  }
+  .msg-wrap:focus-within .fmt-bar { opacity: 0.6; }
+  .fmt-bar:hover { opacity: 1; }
+  .fmt-trigger {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 22px; padding: 0 5px; user-select: none;
+    color: rgba(255,255,255,0.78); font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .fmt-tools {
+    display: inline-flex; align-items: center; gap: 1px;
+    max-width: 0; opacity: 0; overflow: hidden;
+    transition: max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
+  }
+  .fmt-bar:hover .fmt-tools { max-width: 340px; opacity: 1; margin-left: 3px; }
+  .link-pop input::placeholder { color: rgba(255,255,255,0.45); }
+  .fmt-sep { width: 1px; height: 15px; background: rgba(255,255,255,0.16); margin: 0 3px; flex-shrink: 0; }
+  .fmt-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+    color: rgba(255,255,255,0.62); cursor: pointer;
+    font-size: 12px; line-height: 1; user-select: none;
+    transition: background 0.14s ease, color 0.14s ease;
+  }
+  .fmt-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 </style>
 </head>
 <body>
@@ -806,25 +839,121 @@ const loadDraft = () => {
 const htmlToText = (html) => {
   const el = document.createElement('div');
   el.innerHTML = html || '';
-  const walk = (node) => {
+  const walk = (node, ctx) => {
     let out = '';
     node.childNodes.forEach((n) => {
       if (n.nodeType === 3) { out += n.nodeValue; return; }
       if (n.nodeType !== 1) return;
       const tag = n.tagName.toLowerCase();
-      const inner = walk(n);
-      if (tag === 'b' || tag === 'strong') out += '**' + inner + '**';
-      else if (tag === 'i' || tag === 'em') out += '*' + inner + '*';
+      if (tag === 'b' || tag === 'strong') out += '**' + walk(n, ctx) + '**';
+      else if (tag === 'i' || tag === 'em') out += '*' + walk(n, ctx) + '*';
+      else if (tag === 's' || tag === 'strike' || tag === 'del') out += '~~' + walk(n, ctx) + '~~';
+      else if (tag === 'a') out += '[' + walk(n, ctx) + '](' + (n.getAttribute('href') || '') + ')';
       else if (tag === 'br') out += '\n';
-      else if (tag === 'div' || tag === 'p') out += '\n' + inner;
-      else out += inner;
+      else if (tag === 'ul' || tag === 'ol') out += '\n' + walk(n, { ol: tag === 'ol', i: 0 });
+      else if (tag === 'li') {
+        const prefix = ctx && ctx.ol ? (++ctx.i) + '. ' : '- ';
+        out += prefix + walk(n, ctx).trim() + '\n';
+      }
+      else if (tag === 'div' || tag === 'p') out += '\n' + walk(n, ctx);
+      else out += walk(n, ctx);
     });
     return out;
   };
-  return walk(el).replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  return walk(el, null).replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 };
 
-// contentEditable message field: Cmd/Ctrl+B bold, +I italic, +U underline, Tab indents.
+// Formatting toolbar for the message editor. Its own component so the link
+// popover's state can update without re-rendering (and wiping) the editor.
+const Toolbar = ({ editorRef, sync }) => {
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [url, setUrl] = useState('');
+  const saved = useRef(null);
+
+  const saveSel = () => {
+    const sel = window.getSelection();
+    saved.current = (sel && sel.rangeCount && editorRef.current && editorRef.current.contains(sel.anchorNode))
+      ? sel.getRangeAt(0).cloneRange() : null;
+  };
+  const restoreSel = () => {
+    if (editorRef.current) editorRef.current.focus();
+    if (saved.current) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(saved.current);
+    }
+  };
+
+  const fmt = (cmd) => (e) => { e.preventDefault(); document.execCommand(cmd); sync(); };
+  const openLink = (e) => { e.preventDefault(); saveSel(); setUrl(''); setLinkOpen(true); };
+  const cancelLink = () => { setLinkOpen(false); setUrl(''); };
+  const applyLink = () => {
+    const raw = url.trim();
+    restoreSel();
+    if (raw) {
+      const href = /^(https?:|mailto:)/i.test(raw) ? raw : 'https://' + raw;
+      if (saved.current && saved.current.collapsed)
+        document.execCommand('insertHTML', false, '<a href="' + href + '">' + href + '</a>');
+      else
+        document.execCommand('createLink', false, href);
+    }
+    setLinkOpen(false); setUrl(''); sync();
+  };
+
+  return (
+    <React.Fragment>
+      <div className="fmt-bar" style={{
+        position: 'absolute', bottom: 8, right: 8, zIndex: 3,
+        display: 'inline-flex', alignItems: 'center', padding: '3px 4px',
+        background: 'var(--color-surface)', borderRadius: 999,
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 4px 14px rgba(10,10,10,0.18), 0 1px 2px rgba(0,0,0,0.12)'
+      }}>
+        <span className="fmt-trigger" aria-hidden="true">Aa</span>
+        <div className="fmt-tools">
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Bold" title="Bold (Cmd/Ctrl+B)"
+            onMouseDown={fmt('bold')} style={{ fontWeight: 700 }}>B</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Italic" title="Italic (Cmd/Ctrl+I)"
+            onMouseDown={fmt('italic')} style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>I</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Underline" title="Underline (Cmd/Ctrl+U)"
+            onMouseDown={fmt('underline')} style={{ textDecoration: 'underline' }}>U</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Strikethrough" title="Strikethrough"
+            onMouseDown={fmt('strikeThrough')} style={{ textDecoration: 'line-through' }}>S</span>
+          <span className="fmt-sep" />
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Bulleted list" title="Bulleted list"
+            onMouseDown={fmt('insertUnorderedList')} style={{ fontSize: 16, lineHeight: 0 }}>•</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Numbered list" title="Numbered list"
+            onMouseDown={fmt('insertOrderedList')} style={{ fontSize: 10, fontWeight: 600 }}>1.</span>
+          <span className="fmt-sep" />
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Add link" title="Add link"
+            onMouseDown={openLink}><Icon name="external" size={12} /></span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Clear formatting" title="Clear formatting"
+            onMouseDown={fmt('removeFormat')} style={{ fontSize: 15 }}>×</span>
+        </div>
+      </div>
+      {linkOpen &&
+        <div className="link-pop" style={{
+          position: 'absolute', bottom: 46, right: 8, zIndex: 4,
+          display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 6px',
+          background: 'var(--color-surface)', borderRadius: 12,
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 8px 24px rgba(10,10,10,0.25), 0 1px 2px rgba(0,0,0,0.15)'
+        }}>
+          <input autoFocus value={url} placeholder="Paste or type a link"
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyLink(); } else if (e.key === 'Escape') { e.preventDefault(); cancelLink(); } }}
+            style={{ width: 190, border: 'none', outline: 'none', background: 'rgba(255,255,255,0.08)', color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: 13, borderRadius: 7, padding: '6px 9px' }} />
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Apply link" title="Apply"
+            onMouseDown={(e) => { e.preventDefault(); applyLink(); }}>✓</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Cancel" title="Cancel"
+            onMouseDown={(e) => { e.preventDefault(); cancelLink(); }} style={{ fontSize: 15 }}>×</span>
+        </div>
+      }
+    </React.Fragment>
+  );
+};
+
+// contentEditable message field: Cmd/Ctrl+B/I/U, Tab indents, "* " and "1. " start lists.
 // Wrapped in React.memo (never re-renders after mount) so the parent's re-renders
 // on each keystroke don't reconcile away the text being typed.
 const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyle }) => {
@@ -837,8 +966,29 @@ const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyl
   const sync = () => {
     const el = ref.current;
     if (!el) return;
-    if (!el.innerText.replace(/ /g, '').trim()) el.innerHTML = ''; // keep :empty placeholder working
+    if (!el.innerText.replace(/\u00a0/g, '').trim()) el.innerHTML = '';
     onChange(el.innerHTML);
+  };
+
+  // Turn "* " / "- " / "1. " at the start of a line into a real list.
+  const autoList = () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return false;
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+    if (node.nodeType !== 3) return false;
+    const before = node.textContent.slice(0, range.startOffset);
+    const lead = !node.previousSibling || node.previousSibling.nodeName === 'BR';
+    if (!lead) return false;
+    const bullet = /^[*-]$/.test(before);
+    const number = /^\d+\.$/.test(before);
+    if (!bullet && !number) return false;
+    node.textContent = node.textContent.slice(range.startOffset);
+    const r = document.createRange();
+    r.setStart(node, 0); r.collapse(true);
+    sel.removeAllRanges(); sel.addRange(r);
+    document.execCommand(bullet ? 'insertUnorderedList' : 'insertOrderedList');
+    return true;
   };
 
   const onKeyDown = (e) => {
@@ -847,15 +997,19 @@ const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyl
     if (mod && k === 'b') { e.preventDefault(); document.execCommand('bold'); sync(); }
     else if (mod && k === 'i') { e.preventDefault(); document.execCommand('italic'); sync(); }
     else if (mod && k === 'u') { e.preventDefault(); document.execCommand('underline'); sync(); }
+    else if (e.key === ' ') { if (autoList()) { e.preventDefault(); sync(); } }
     else if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '\t'); sync(); }
   };
 
   return (
-    <div ref={ref} className="msg-editor" data-placeholder="A short note…"
-      contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true"
-      onInput={sync} onKeyDown={onKeyDown}
-      onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
-      style={{ ...inputStyle, width: '100%', minHeight: 104, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', tabSize: 4 }} />
+    <div className="msg-wrap" style={{ position: 'relative', width: '100%' }}>
+      <div ref={ref} className="msg-editor" data-placeholder="A short note…"
+        contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true"
+        onInput={sync} onKeyDown={onKeyDown}
+        onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
+        style={{ ...inputStyle, width: '100%', minHeight: 220, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', tabSize: 4 }} />
+      <Toolbar editorRef={ref} sync={sync} />
+    </div>
   );
 }, () => true);
 
