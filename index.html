@@ -84,6 +84,11 @@
       transition-duration: 0.01ms !important;
     }
   }
+  .msg-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #b0aca4;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -792,18 +797,67 @@ const ChatPage = ({ accent }) =>
   </PagePlaceholder>;
 
 
-const ContactField = ({ label, accent, error, children }) =>
-  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-    <span className="mono" style={{ fontSize: 11, color: error ? '#b4432a' : '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2 }}>
-      {label}{error ? ` · ${error}` : ''}
-    </span>
-    {children}
-  </label>;
-
 const DRAFT_KEY = 'polter_contact_draft';
 const loadDraft = () => {
   try { return JSON.parse(window.localStorage.getItem(DRAFT_KEY)) || {}; } catch (e) { return {}; }
 };
+
+// Turn the rich-text editor's HTML into clean Markdown-ish text for the email body.
+const htmlToText = (html) => {
+  const el = document.createElement('div');
+  el.innerHTML = html || '';
+  const walk = (node) => {
+    let out = '';
+    node.childNodes.forEach((n) => {
+      if (n.nodeType === 3) { out += n.nodeValue; return; }
+      if (n.nodeType !== 1) return;
+      const tag = n.tagName.toLowerCase();
+      const inner = walk(n);
+      if (tag === 'b' || tag === 'strong') out += '**' + inner + '**';
+      else if (tag === 'i' || tag === 'em') out += '*' + inner + '*';
+      else if (tag === 'br') out += '\n';
+      else if (tag === 'div' || tag === 'p') out += '\n' + inner;
+      else out += inner;
+    });
+    return out;
+  };
+  return walk(el).replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+};
+
+// contentEditable message field: Cmd/Ctrl+B bold, +I italic, +U underline, Tab indents.
+// Wrapped in React.memo (never re-renders after mount) so the parent's re-renders
+// on each keystroke don't reconcile away the text being typed.
+const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyle }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current && initialHTML) ref.current.innerHTML = initialHTML;
+  }, []);
+
+  const sync = () => {
+    const el = ref.current;
+    if (!el) return;
+    if (!el.innerText.replace(/ /g, '').trim()) el.innerHTML = ''; // keep :empty placeholder working
+    onChange(el.innerHTML);
+  };
+
+  const onKeyDown = (e) => {
+    const mod = e.metaKey || e.ctrlKey;
+    const k = e.key.toLowerCase();
+    if (mod && k === 'b') { e.preventDefault(); document.execCommand('bold'); sync(); }
+    else if (mod && k === 'i') { e.preventDefault(); document.execCommand('italic'); sync(); }
+    else if (mod && k === 'u') { e.preventDefault(); document.execCommand('underline'); sync(); }
+    else if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '\t'); sync(); }
+  };
+
+  return (
+    <div ref={ref} className="msg-editor" data-placeholder="A short note…"
+      contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true"
+      onInput={sync} onKeyDown={onKeyDown}
+      onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
+      style={{ ...inputStyle, width: '100%', minHeight: 104, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', tabSize: 4 }} />
+  );
+}, () => true);
 
 const ContactForm = ({ accent }) => {
   const [values, setValues] = useState(() => {
@@ -829,7 +883,7 @@ const ContactForm = ({ accent }) => {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) next.email = 'invalid email';
     if (!values.confirmEmail.trim()) next.confirmEmail = 'confirm your email';
     else if (values.email.trim().toLowerCase() !== values.confirmEmail.trim().toLowerCase()) next.confirmEmail = 'emails do not match';
-    if (!values.message.trim()) next.message = 'required';
+    if (!htmlToText(values.message).trim()) next.message = 'required';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -846,7 +900,7 @@ const ContactForm = ({ accent }) => {
         body: JSON.stringify({
           name: values.name.trim(),
           email: values.email.trim(),
-          message: values.message.trim(),
+          message: htmlToText(values.message),
           signature: values.signature.trim() || '—',
           _subject: 'New message from polter.sh contact form',
           _template: 'table',
@@ -861,91 +915,107 @@ const ContactForm = ({ accent }) => {
     }
   };
 
-  const baseField = (name) => ({
-    fontFamily: 'Geist, sans-serif',
-    fontSize: 14,
-    color: '#1a1a1a',
-    background: '#fbfaf6',
-    border: `1px solid ${errors[name] ? '#d99' : focused === name ? accent : 'rgba(0,0,0,0.12)'}`,
-    borderRadius: 10,
-    padding: '11px 13px',
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
-    transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-    boxShadow: focused === name ? `0 0 0 3px ${accent}22` : 'none'
+  const cardStyle = {
+    maxWidth: 620, background: '#fbfaf6',
+    border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden'
+  };
+  const rowStyle = (name) => ({
+    display: 'flex', alignItems: 'flex-start', gap: 14,
+    padding: '13px 18px',
+    borderBottom: '1px solid rgba(0,0,0,0.06)',
+    background: focused === name ? '#f4f1ea' : 'transparent',
+    transition: 'background 0.15s ease'
   });
+  const labelStyle = (name) => ({
+    fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase',
+    color: errors[name] ? '#b4432a' : focused === name ? accent : '#8a8580',
+    width: 88, flexShrink: 0, paddingTop: 4, transition: 'color 0.15s ease'
+  });
+  const inputStyle = {
+    flex: 1, minWidth: 0, border: 'none', background: 'transparent',
+    outline: 'none', fontFamily: 'Geist, sans-serif', fontSize: 14,
+    color: '#1a1a1a', padding: 0
+  };
+  const errTag = { fontSize: 10, color: '#b4432a', letterSpacing: 0.4, paddingTop: 5, flexShrink: 0, whiteSpace: 'nowrap', fontFamily: 'Geist Mono, monospace' };
+  const row = (name, opts) =>
+    <div style={rowStyle(name)}>
+      <span className="mono" style={labelStyle(name)}>{opts.label}</span>
+      <input type={opts.type || 'text'} value={values[name]} onChange={set(name)}
+        onFocus={() => setFocused(name)} onBlur={() => setFocused(null)}
+        onPaste={opts.onPaste} placeholder={opts.placeholder} style={inputStyle} />
+      {errors[name] && <span style={errTag}>{errors[name]}</span>}
+    </div>;
 
   if (status === 'success')
     return (
-      <M.div
-        initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
-        style={{
-          display: 'flex', alignItems: 'flex-start', gap: 12,
-          padding: '18px 18px', marginBottom: 32,
-          background: '#fbfaf6', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, maxWidth: 480
-        }}>
-        <span style={{ width: 8, height: 8, marginTop: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
-        <div>
-          <div style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 500, marginBottom: 3 }}>Message sent.</div>
-          <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55 }}>Thanks for reaching out — I'll get back to you soon.</div>
+      <M.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '22px 20px' }}>
+          <span style={{ width: 8, height: 8, marginTop: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 500, marginBottom: 3 }}>Message sent.</div>
+            <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55 }}>Thanks for reaching out. I'll get back to you soon.</div>
+          </div>
         </div>
       </M.div>
     );
 
   return (
-    <form onSubmit={submit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 32, maxWidth: 480 }}>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 180px' }}>
-          <ContactField label="name" accent={accent} error={errors.name}>
-            <input type="text" value={values.name} onChange={set('name')}
-              onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
-              placeholder="Your name" style={baseField('name')} />
-          </ContactField>
+    <form onSubmit={submit} noValidate style={cardStyle}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        padding: '14px 18px', background: '#f4f1ea', borderBottom: '1px solid rgba(0,0,0,0.07)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, color: '#1a1a1a' }}>
+          <Icon name="mail" size={14} />
+          <span style={{ fontSize: 13, fontWeight: 500 }}>New message</span>
         </div>
-        <div style={{ flex: '1 1 180px' }}>
-          <ContactField label="email" accent={accent} error={errors.email}>
-            <input type="email" value={values.email} onChange={set('email')}
-              onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
-              placeholder="you@example.com" style={baseField('email')} />
-          </ContactField>
-        </div>
+        <span className="mono" style={{ fontSize: 11, color: '#8a8580', letterSpacing: 0.4 }}>
+          to <span style={{ color: accent }}>contact@polter.sh</span>
+        </span>
       </div>
-      <ContactField label="confirm email" accent={accent} error={errors.confirmEmail}>
-        <input type="email" value={values.confirmEmail} onChange={set('confirmEmail')}
-          onFocus={() => setFocused('confirmEmail')} onBlur={() => setFocused(null)}
-          onPaste={(e) => e.preventDefault()}
-          placeholder="re-enter your email" style={baseField('confirmEmail')} />
-      </ContactField>
-      <ContactField label="message" accent={accent} error={errors.message}>
-        <textarea value={values.message} onChange={set('message')}
-          onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
-          rows={5} placeholder="A short note…"
-          style={{ ...baseField('message'), resize: 'vertical', minHeight: 110, lineHeight: 1.55 }} />
-      </ContactField>
-      <ContactField label="signature · optional" accent={accent} error={errors.signature}>
+
+      {row('name', { label: 'name', placeholder: 'Your name' })}
+      {row('email', { label: 'email', type: 'email', placeholder: 'you@example.com' })}
+      {row('confirmEmail', { label: 'confirm', type: 'email', placeholder: 're-enter your email', onPaste: (e) => e.preventDefault() })}
+
+      <div style={{ ...rowStyle('message'), flexDirection: 'column', gap: 9 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+          <span className="mono" style={{ ...labelStyle('message'), width: 'auto', paddingTop: 0 }}>message</span>
+          {errors.message && <span style={{ ...errTag, paddingTop: 0 }}>{errors.message}</span>}
+        </div>
+        <MessageEditor setFocused={setFocused}
+          initialHTML={values.message} inputStyle={inputStyle}
+          onChange={(html) => setValues((v) => ({ ...v, message: html }))} />
+      </div>
+
+      <div style={rowStyle('signature')}>
+        <span className="mono" style={labelStyle('signature')}>signature</span>
         <input type="text" value={values.signature} onChange={set('signature')}
           onFocus={() => setFocused('signature')} onBlur={() => setFocused(null)}
-          placeholder="e.g. — Jane, Recruiter @ Acme" style={baseField('signature')} />
-      </ContactField>
+          placeholder="e.g. Jane, Recruiter @ Acme" style={inputStyle} />
+        <span className="mono" style={{ fontSize: 10, color: '#b0aca4', letterSpacing: 0.8, paddingTop: 5, flexShrink: 0 }}>optional</span>
+      </div>
 
-      {status === 'error' &&
-        <div className="mono" style={{ fontSize: 12, color: '#b4432a', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        padding: '14px 18px'
+      }}>
+        <span className="mono" style={{
+          fontSize: 12, color: '#b4432a', display: 'flex', alignItems: 'center', gap: 8,
+          opacity: status === 'error' ? 1 : 0, transition: 'opacity 0.15s ease'
+        }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b4432a', flexShrink: 0 }} />
-          Something went wrong. Please try again.
-        </div>
-      }
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          Something went wrong. Try again.
+        </span>
         <button type="submit" disabled={status === 'sending'}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             fontFamily: 'Geist, sans-serif', fontSize: 14, fontWeight: 500,
             color: '#fff', background: accent,
-            border: 'none', borderRadius: 10, padding: '11px 20px',
+            border: 'none', borderRadius: 10, padding: '10px 18px',
             cursor: status === 'sending' ? 'default' : 'pointer',
             opacity: status === 'sending' ? 0.7 : 1,
-            transition: 'opacity 0.15s ease'
+            transition: 'opacity 0.15s ease', flexShrink: 0
           }}>
           {status === 'sending' ? 'Sending…' : 'Send message'}
           {status !== 'sending' && <Icon name="arrow-up-right" size={14} />}
@@ -1038,9 +1108,6 @@ const ComposePage = ({ accent, navigate }) => {
       <Icon name="arrow-left" size={13} />
       back to contact
     </button>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: '#1a1a1a' }}>
-      Send a short note.
-    </h1>
     <ContactForm accent={accent} />
   </PagePlaceholder>);
 };
@@ -1077,7 +1144,7 @@ function App() {
   // keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const k = e.key.toLowerCase();
       if (k === 'a') {setRoute('/about');} else
