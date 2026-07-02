@@ -968,7 +968,7 @@ const ContactPage = ({ accent, navigate }) => {
     <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 24px', lineHeight: 1.1, color: '#1a1a1a' }}>
       Send a short note.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>I read everything. I reply to most. The fastest path is email, I check it twice a day, no more.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>I read everything. I reply to most. Email is the fastest path — I check it several times a day, so feel free to send one whenever.
 
   </p>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)' }}>
@@ -1038,13 +1038,9 @@ const ComposePage = ({ accent, navigate }) => {
       <Icon name="arrow-left" size={13} />
       back to contact
     </button>
-    <SectionLabel>contact · compose</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: '#1a1a1a' }}>
       Send a short note.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>
-      This goes straight to my inbox. Your draft is saved on this device as you type — a refresh or stepping away won't lose it.
-    </p>
     <ContactForm accent={accent} />
   </PagePlaceholder>);
 };
