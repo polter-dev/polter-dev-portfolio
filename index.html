@@ -800,11 +800,25 @@ const ContactField = ({ label, accent, error, children }) =>
     {children}
   </label>;
 
+const DRAFT_KEY = 'polter_contact_draft';
+const loadDraft = () => {
+  try { return JSON.parse(window.localStorage.getItem(DRAFT_KEY)) || {}; } catch (e) { return {}; }
+};
+
 const ContactForm = ({ accent }) => {
-  const [values, setValues] = useState({ name: '', email: '', message: '' });
+  const [values, setValues] = useState(() => {
+    const d = loadDraft();
+    return { name: d.name || '', email: d.email || '', confirmEmail: d.confirmEmail || '', message: d.message || '', signature: d.signature || '' };
+  });
   const [errors, setErrors] = useState({});
   const [focused, setFocused] = useState(null);
   const [status, setStatus] = useState('idle'); // idle | sending | success | error
+
+  // persist a draft so an accidental refresh or leaving the page never wipes what's typed
+  useEffect(() => {
+    if (status === 'success') return;
+    try { window.localStorage.setItem(DRAFT_KEY, JSON.stringify(values)); } catch (e) {}
+  }, [values, status]);
 
   const set = (k) => (e) => setValues((v) => ({ ...v, [k]: e.target.value }));
 
@@ -813,6 +827,8 @@ const ContactForm = ({ accent }) => {
     if (!values.name.trim()) next.name = 'required';
     if (!values.email.trim()) next.email = 'required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) next.email = 'invalid email';
+    if (!values.confirmEmail.trim()) next.confirmEmail = 'confirm your email';
+    else if (values.email.trim().toLowerCase() !== values.confirmEmail.trim().toLowerCase()) next.confirmEmail = 'emails do not match';
     if (!values.message.trim()) next.message = 'required';
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -831,6 +847,7 @@ const ContactForm = ({ accent }) => {
           name: values.name.trim(),
           email: values.email.trim(),
           message: values.message.trim(),
+          signature: values.signature.trim() || '—',
           _subject: 'New message from polter.sh contact form',
           _template: 'table',
           _captcha: 'false'
@@ -838,6 +855,7 @@ const ContactForm = ({ accent }) => {
       });
       if (!res.ok) throw new Error('bad status');
       setStatus('success');
+      try { window.localStorage.removeItem(DRAFT_KEY); } catch (e) {}
     } catch (err) {
       setStatus('error');
     }
@@ -893,11 +911,22 @@ const ContactForm = ({ accent }) => {
           </ContactField>
         </div>
       </div>
+      <ContactField label="confirm email" accent={accent} error={errors.confirmEmail}>
+        <input type="email" value={values.confirmEmail} onChange={set('confirmEmail')}
+          onFocus={() => setFocused('confirmEmail')} onBlur={() => setFocused(null)}
+          onPaste={(e) => e.preventDefault()}
+          placeholder="re-enter your email" style={baseField('confirmEmail')} />
+      </ContactField>
       <ContactField label="message" accent={accent} error={errors.message}>
         <textarea value={values.message} onChange={set('message')}
           onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
           rows={5} placeholder="A short note…"
           style={{ ...baseField('message'), resize: 'vertical', minHeight: 110, lineHeight: 1.55 }} />
+      </ContactField>
+      <ContactField label="signature · optional" accent={accent} error={errors.signature}>
+        <input type="text" value={values.signature} onChange={set('signature')}
+          onFocus={() => setFocused('signature')} onBlur={() => setFocused(null)}
+          placeholder="e.g. — Jane, Recruiter @ Acme" style={baseField('signature')} />
       </ContactField>
 
       {status === 'error' &&
@@ -926,8 +955,7 @@ const ContactForm = ({ accent }) => {
   );
 };
 
-const ContactPage = ({ accent }) => {
-  const [open, setOpen] = useState(false);
+const ContactPage = ({ accent, navigate }) => {
   const [emailHover, setEmailHover] = useState(false);
   const rows = [
     ['email', 'contact@polter.sh', 'mail', null],
@@ -947,7 +975,7 @@ const ContactPage = ({ accent }) => {
       {rows.map(([k, v, icon, href]) => {
     const isEmail = k === 'email';
     const inner = <React.Fragment>
-          <div style={{ color: isEmail && (emailHover || open) ? accent : '#8a8580', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
+          <div style={{ color: isEmail && emailHover ? accent : '#8a8580', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
           <span className="mono" style={{ fontSize: 11, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, width: 64 }}>{k}</span>
           {href ? (
             <a href={href} target="_blank" rel="noopener noreferrer"
@@ -963,21 +991,21 @@ const ContactPage = ({ accent }) => {
               fontSize: 10, textTransform: 'uppercase', letterSpacing: 1,
               padding: '4px 10px', borderRadius: 999,
               color: accent, background: `${accent}14`,
-              border: `1px solid ${accent}${emailHover || open ? '55' : '33'}`,
+              border: `1px solid ${accent}${emailHover ? '55' : '33'}`,
               transition: 'border-color 0.15s ease'
             }}>
-              {open ? 'close' : 'compose'}<Icon name="message" size={11} />
+              compose<Icon name="message" size={11} />
             </span>
           }
         </React.Fragment>;
     if (isEmail)
-      return <div key={k} role="button" tabIndex={0} aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen((o) => !o); } }}
+      return <div key={k} role="button" tabIndex={0}
+        onClick={() => navigate('/contact/compose')}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/contact/compose'); } }}
         onMouseEnter={() => setEmailHover(true)} onMouseLeave={() => setEmailHover(false)}
         style={{
           display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-          background: emailHover || open ? '#f6f4ee' : '#fbfaf6', cursor: 'pointer',
+          background: emailHover ? '#f6f4ee' : '#fbfaf6', cursor: 'pointer',
           transition: 'background 0.15s ease'
         }}>{inner}</div>;
     return <div key={k} style={{
@@ -986,16 +1014,38 @@ const ContactPage = ({ accent }) => {
     }}>{inner}</div>;
       })}
     </div>
-    {open &&
-      <M.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }}
-        style={{ marginTop: 16 }}>
-        <ContactForm accent={accent} />
-      </M.div>
-    }
     <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }} />
       <span className="mono">currently accepting summer 2027 internships</span>
     </div>
+  </PagePlaceholder>);
+};
+
+
+const ComposePage = ({ accent, navigate }) => {
+  const [backHover, setBackHover] = useState(false);
+  return (
+  <PagePlaceholder>
+    <button
+      onClick={() => navigate('/contact')}
+      onMouseEnter={() => setBackHover(true)} onMouseLeave={() => setBackHover(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 26,
+        fontFamily: 'Geist Mono, monospace', fontSize: 12, letterSpacing: 0.4,
+        color: backHover ? accent : '#8a8580', background: 'transparent',
+        border: 'none', padding: 0, cursor: 'pointer', transition: 'color 0.15s ease'
+      }}>
+      <Icon name="arrow-left" size={13} />
+      back to contact
+    </button>
+    <SectionLabel>contact · compose</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Send a short note.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>
+      This goes straight to my inbox. Your draft is saved on this device as you type — a refresh or stepping away won't lose it.
+    </p>
+    <ContactForm accent={accent} />
   </PagePlaceholder>);
 };
 
@@ -1148,7 +1198,8 @@ function App() {
             {route === '/stack' && <StackPage accent={tweaks.accent} />}
             {route === '/chat' && <ChatPage accent={tweaks.accent} />}
             {route === '/resume' && <ResumePage accent={tweaks.accent} />}
-            {route === '/contact' && <ContactPage accent={tweaks.accent} />}
+            {route === '/contact' && <ContactPage accent={tweaks.accent} navigate={setRoute} />}
+            {route === '/contact/compose' && <ComposePage accent={tweaks.accent} navigate={setRoute} />}
 
             {/* back hint */}
             <div style={{ maxWidth: 640, margin: '40px auto 0', padding: '0 32px' }}>
