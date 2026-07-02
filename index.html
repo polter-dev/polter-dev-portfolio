@@ -96,10 +96,10 @@
     cursor: pointer;
   }
   .fmt-bar {
-    opacity: 0.32;
+    opacity: 0.78;
     transition: opacity 0.18s ease;
   }
-  .msg-wrap:focus-within .fmt-bar { opacity: 0.6; }
+  .msg-wrap:focus-within .fmt-bar { opacity: 0.9; }
   .fmt-bar:hover { opacity: 1; }
   .fmt-trigger {
     display: inline-flex; align-items: center; justify-content: center;
@@ -905,8 +905,8 @@ const Toolbar = ({ editorRef, sync }) => {
       <div className="fmt-bar" style={{
         position: 'absolute', bottom: 8, right: 8, zIndex: 3,
         display: 'inline-flex', alignItems: 'center', padding: '3px 4px',
-        background: 'var(--color-surface)', borderRadius: 999,
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: '#33363a', borderRadius: 999,
+        border: '1px solid rgba(255,255,255,0.1)',
         boxShadow: '0 4px 14px rgba(10,10,10,0.18), 0 1px 2px rgba(0,0,0,0.12)'
       }}>
         <span className="fmt-trigger" aria-hidden="true">Aa</span>
@@ -935,7 +935,7 @@ const Toolbar = ({ editorRef, sync }) => {
         <div className="link-pop" style={{
           position: 'absolute', bottom: 46, right: 8, zIndex: 4,
           display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 6px',
-          background: 'var(--color-surface)', borderRadius: 12,
+          background: '#33363a', borderRadius: 12,
           border: '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 8px 24px rgba(10,10,10,0.25), 0 1px 2px rgba(0,0,0,0.15)'
         }}>
@@ -966,7 +966,9 @@ const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyl
   const sync = () => {
     const el = ref.current;
     if (!el) return;
-    if (!el.innerText.replace(/\u00a0/g, '').trim()) el.innerHTML = '';
+    // Reset to empty (so the CSS placeholder shows) only when there's no text AND
+    // no structural elements \u2014 otherwise a brand-new empty list/link gets wiped.
+    if (!el.innerText.replace(/\u00a0/g, '').trim() && !el.querySelector('ul, ol, li, a')) el.innerHTML = '';
     onChange(el.innerHTML);
   };
 
@@ -975,19 +977,46 @@ const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyl
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return false;
     const range = sel.getRangeAt(0);
-    const node = range.startContainer;
+    if (!range.collapsed) return false;
+    let node = range.startContainer;
+    let offset = range.startOffset;
+    // If the caret sits at the element level, resolve to the preceding text node.
+    if (node.nodeType === 1) {
+      const child = node.childNodes[offset - 1];
+      if (child && child.nodeType === 3) { node = child; offset = child.textContent.length; }
+      else return false;
+    }
     if (node.nodeType !== 3) return false;
-    const before = node.textContent.slice(0, range.startOffset);
+    const before = node.textContent.slice(0, offset);
     const lead = !node.previousSibling || node.previousSibling.nodeName === 'BR';
     if (!lead) return false;
     const bullet = /^[*-]$/.test(before);
     const number = /^\d+\.$/.test(before);
     if (!bullet && !number) return false;
-    node.textContent = node.textContent.slice(range.startOffset);
-    const r = document.createRange();
-    r.setStart(node, 0); r.collapse(true);
-    sel.removeAllRanges(); sel.addRange(r);
+    // Select the marker text and delete it via the real command so the browser's
+    // selection state stays valid for the list command that follows.
+    const del = document.createRange();
+    del.setStart(node, 0);
+    del.setEnd(node, offset);
+    sel.removeAllRanges();
+    sel.addRange(del);
+    document.execCommand('delete');
     document.execCommand(bullet ? 'insertUnorderedList' : 'insertOrderedList');
+    // First line has no block wrapper, so the command above can no-op — detect
+    // that (caret not inside an <li>) and build the list node deterministically.
+    let anc = window.getSelection().anchorNode, inList = false;
+    while (anc && anc !== ref.current) { if (anc.nodeName === 'LI') { inList = true; break; } anc = anc.parentNode; }
+    if (!inList) {
+      const list = document.createElement(bullet ? 'ul' : 'ol');
+      const li = document.createElement('li');
+      li.appendChild(document.createElement('br'));
+      list.appendChild(li);
+      const r2 = sel.getRangeAt(0);
+      r2.insertNode(list);
+      const cr = document.createRange();
+      cr.setStart(li, 0); cr.collapse(true);
+      sel.removeAllRanges(); sel.addRange(cr);
+    }
     return true;
   };
 
