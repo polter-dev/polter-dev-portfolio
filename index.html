@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marcus — Portfolio</title>
+<title>Marcus - Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -122,6 +122,9 @@
     transition: background 0.14s ease, color 0.14s ease;
   }
   .fmt-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .live-badge { transition: background 0.14s ease, color 0.14s ease; }
+  .live-badge:hover { background: #15803d !important; color: #fff !important; }
+  .live-badge:hover .live-dot { background: #fff !important; }
 </style>
 </head>
 <body>
@@ -445,7 +448,7 @@ const AboutPage = () =>
       {[
     ['based in', 'Orlando, FL'],
     ['working on', 'Learning Nixtla'],
-    ['reading', 'Meditations — Marcus Aurelius']].
+    ['reading', 'Meditations - Marcus Aurelius']].
     map(([k, v]) =>
     <div key={k}>
           <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 }}>{k}</div>
@@ -457,6 +460,7 @@ const AboutPage = () =>
 
 
 const projects = [
+{ year: '2026', name: 'Terminal Presence', url: 'https://github.com/polter-dev/discord_terminal_presence', live: 'https://termp.polter.sh/', desc: "A command-line tool that shows friends on Discord what you're doing in the terminal, the same idea as the little “Playing...” status Discord shows for games, but for tools like Neovim, tmux, or Claude Code. It automatically detects which of 48 built-in CLI tools you're using, displays a running timer and the tool's logo, and lets you control exactly what's shown (like hiding your folder name) for privacy. Ships as a single Go binary, no bot, no token, nothing leaves your machine.", tags: ['Go', 'Discord Rich Presence', 'CLI', 'systems'] },
 { year: '2026', name: 'CapChecker', url: 'https://github.com/azizu06/CapChecker', desc: "Built for the BloomKnights 2026 12-hour hackathon. Turns a short-form financial video into a source-backed claim scorecard: a streamed pipeline extracts claims with the Gemini API, grounds them against Google Search and live Finnhub market data via function calling, and emits a deterministic 0–100 “Cap Score” with per-claim evidence tiered by citation strength (primary, high, medium, low). Also ships a searchable, category-filtered feed of vetted YouTube videos that auto-refreshes new candidates behind reliability gating, backed by idempotent, safe-failing Supabase writes. Next.js + TypeScript, tested with Vitest and Playwright against credential-free fixtures, deployed on Vercel.", tags: ['Next.js', 'TypeScript', 'Gemini API', 'Supabase', 'Finnhub', 'Playwright'] },
 { year: '2026', name: 'ScentStack', url: 'https://github.com/polter-dev/Fragrance-Searcher', desc: "Local-first fragrance deal aggregator for macOS. A Playwright crawler scrapes gray-market retailers on a schedule into SQLite, then normalizes and fuzzy-matches listings across sites to surface the best deals by effective $/mL after coupons and shipping. Features a cart optimizer that computes the cheapest per-site allocation given shipping thresholds and promo rules, price-drop detection vs each listing's trailing 30-day average, and a watchlist with target prices. FastAPI + SQLAlchemy backend with an APScheduler crawl every 12h, launchd job for background crawling, and a React + Vite + TypeScript frontend.", tags: ['Python', 'FastAPI', 'Playwright', 'SQLite', 'React', 'TypeScript'] },
 { year: '2026', name: 'Course Scrapper', url: 'https://github.com/polter-dev/course-watcher', desc: "Polls Valencia College's Banner Self-Service API and sends Discord notifications when seats open in full course sections. Reverse-engineered the undocumented JSON endpoints and session flow, including a chk_open_only parameter that acts as an inverter and is cached per session \u2014 requiring two parallel HTTP sessions to fetch the full section list. Hardened with atomic state writes, file-locking against duplicate instances, and exponential backoff with jitter. Deployed 24/7 via macOS launchd with auto-restart on crash.", tags: ['Python', 'Banner SSB', 'Discord webhooks', 'launchd', 'systems'] },
@@ -494,6 +498,20 @@ const ProjectsPage = ({ accent }) =>
             <div style={{ fontSize: 16, fontWeight: 500, color: '#1a1a1a', marginBottom: 6 }}>{p.name}</div>
             <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {p.live &&
+          <span
+            className="mono live-badge"
+            onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
+            style={{
+              fontSize: 10, padding: '2px 7px', borderRadius: 4,
+              background: 'rgba(21,128,61,0.14)', color: '#15803d',
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              cursor: 'pointer'
+            }}>
+            <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#15803d' }}/>
+            live
+          </span>
+          }
             {p.tags.map((t) =>
           <span key={t} className="mono" style={{
             fontSize: 10, padding: '2px 7px', borderRadius: 4,
@@ -562,12 +580,12 @@ const resumeData = {
   ],
   education: [
     { school: 'University of Central Florida', degree: 'Bachelor of Science in Computer Science', dates: 'Aug. 2024 – May 2027', loc: 'Orlando, FL' },
-    { school: 'Valencia College',              degree: 'Associates of Arts — General Studies',     dates: 'Aug. 2022 – May 2024', loc: 'Orlando, FL' },
+    { school: 'Valencia College',              degree: 'Associates of Arts - General Studies',     dates: 'Aug. 2022 - May 2024', loc: 'Orlando, FL' },
   ],
   experience: [
     {
       org: 'University of Central Florida',
-      role: 'Teaching Assistant — Data Structures & Algorithms (COP 3502C)',
+      role: 'Teaching Assistant - Data Structures & Algorithms (COP 3502C)',
       dates: 'Jan 2025 – Present', loc: 'Orlando, FL',
       bullets: [
         'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables), instructing over 100 students per semester.',
@@ -587,7 +605,7 @@ const resumeData = {
     },
     {
       org: 'Mindhome',
-      role: 'Software Engineer — Internship',
+      role: 'Software Engineer - Internship',
       dates: 'Dec 2022 – Feb 2023', loc: 'Remote',
       bullets: [
         'Completed ROS2 training utilizing Python, building foundational skills in AI and robotics programming.',
@@ -1085,7 +1103,7 @@ const ContactForm = ({ accent }) => {
           name: values.name.trim(),
           email: values.email.trim(),
           message: htmlToText(values.message),
-          signature: values.signature.trim() || '—',
+          signature: values.signature.trim() || '-',
           _subject: 'New message from polter.sh contact form',
           _template: 'table',
           _captcha: 'false'
@@ -1389,7 +1407,7 @@ function App() {
         fontFamily: 'Geist Mono, monospace',
         fontSize: 11, color: '#8a8580', letterSpacing: 0.6, zIndex: 5
       }}>
-        v0.4.2 — orlando, fl
+        v0.4.2 - orlando, fl
       </div>
 
       {/* Pill — anchored differently on landing vs inner */}
