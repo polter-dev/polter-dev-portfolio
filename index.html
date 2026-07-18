@@ -19,7 +19,55 @@
     --color-muted: #8a8a8a;
     --color-accent: #10B981;
     --color-divider: rgba(255,255,255,0.08);
+    --ink-strong: #0a0a0a;
+    --ink: #1a1a1a;
+    --ink-body: #3a3a36;
+    --ink-soft: #5a5a55;
+    --ink-faint: #8a8580;
+    --ink-ghost: #bdbab2;
+    --ink-placeholder: #b0aca4;
+    --card: #fbfaf6;
+    --card-tint: #f4f1ea;
+    --card-hover: #f6f4ee;
+    --card-glass: rgba(251,250,246,0.85);
+    --line: rgba(0,0,0,0.08);
+    --line-soft: rgba(0,0,0,0.07);
+    --line-strong: rgba(0,0,0,0.12);
+    --line-dash: rgba(0,0,0,0.15);
+    --chip: rgba(0,0,0,0.04);
+    --chip-line: rgba(0,0,0,0.06);
+    --kbd-bg: rgba(0,0,0,0.05);
+    --live-bg: rgba(21,128,61,0.14);
+    --live-fg: #15803d;
+    --err: #b4432a;
+    --grain: rgba(0,0,0,0.025);
   }
+  html[data-theme="dark"] {
+    --color-surface: #211f1b;
+    --ink-strong: #f7f4ed;
+    --ink: #ebe8e0;
+    --ink-body: #c9c5bc;
+    --ink-soft: #a39f97;
+    --ink-faint: #8b877f;
+    --ink-ghost: #56534d;
+    --ink-placeholder: #6c6963;
+    --card: #201e1a;
+    --card-tint: #262420;
+    --card-hover: #2a2823;
+    --card-glass: rgba(30,28,24,0.85);
+    --line: rgba(255,255,255,0.1);
+    --line-soft: rgba(255,255,255,0.09);
+    --line-strong: rgba(255,255,255,0.14);
+    --line-dash: rgba(255,255,255,0.2);
+    --chip: rgba(255,255,255,0.06);
+    --chip-line: rgba(255,255,255,0.08);
+    --kbd-bg: rgba(255,255,255,0.07);
+    --live-bg: rgba(74,222,128,0.13);
+    --live-fg: #4ade80;
+    --err: #e0674c;
+    --grain: rgba(255,255,255,0.03);
+  }
+  body { transition: background-color 0.35s ease; }
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
@@ -27,7 +75,7 @@
     height: 100%;
     background: var(--color-bg);
     font-family: 'Geist', -apple-system, sans-serif;
-    color: #1a1a1a;
+    color: var(--ink);
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
   }
@@ -40,7 +88,7 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.025) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, var(--grain) 1px, transparent 0);
     background-size: 4px 4px;
     z-index: 1;
   }
@@ -86,7 +134,7 @@
   }
   .msg-editor:empty::before {
     content: attr(data-placeholder);
-    color: #b0aca4;
+    color: var(--ink-placeholder);
     pointer-events: none;
   }
   .msg-editor a {
@@ -177,6 +225,8 @@ const Icon = ({ name, size = 16 }) => {
       return <svg {...props}><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>;
     case "sparkle":
       return <svg {...props}><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/><path d="M5.6 5.6l4.2 4.2M14.2 14.2l4.2 4.2M18.4 5.6l-4.2 4.2M9.8 14.2l-4.2 4.2"/></svg>;
+    case "sun":
+      return <svg {...props}><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>;
     case "moon":
       return <svg {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
     case "linkedin":
@@ -264,7 +314,7 @@ const NavIconButton = ({ item, active, compact, onNavigate, accent }) => {
             top: 'calc(100% + 14px)',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: '#0a0a0a',
+            background: 'var(--color-surface)',
             color: 'white',
             fontSize: 11,
             padding: '5px 10px',
@@ -286,6 +336,37 @@ const NavIconButton = ({ item, active, compact, onNavigate, accent }) => {
       </AP>
     </div>);
 
+};
+
+// ----- Theme toggle -----
+const ThemeToggle = ({ theme, onToggle }) => {
+  const [hover, setHover] = useState(false);
+  const dark = theme === 'dark';
+  return (
+    <M.button
+      onClick={onToggle}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      whileTap={{ scale: 0.88 }}
+      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={dark ? 'Light mode' : 'Dark mode'}
+      style={{
+        width: 26, height: 26, borderRadius: '50%', padding: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: hover ? 'var(--ink)' : 'var(--ink-faint)',
+        background: hover ? 'var(--kbd-bg)' : 'transparent',
+        transition: 'color 0.15s ease, background 0.15s ease'
+      }}>
+      <M.span
+        key={dark ? 'sun' : 'moon'}
+        initial={{ opacity: 0, rotate: -50, scale: 0.7 }}
+        animate={{ opacity: 1, rotate: 0, scale: 1 }}
+        transition={{ duration: 0.18 }}
+        style={{ display: 'flex' }}>
+        <Icon name={dark ? 'sun' : 'moon'} size={13} />
+      </M.span>
+    </M.button>
+  );
 };
 
 // ----- The Pill -----
@@ -424,7 +505,7 @@ const PagePlaceholder = ({ children }) =>
 
 const SectionLabel = ({ children }) =>
 <span className="mono" style={{
-  fontSize: 11, color: '#8a8580', letterSpacing: 1.4,
+  fontSize: 11, color: 'var(--ink-faint)', letterSpacing: 1.4,
   textTransform: 'uppercase', display: 'inline-block', marginBottom: 16
 }}>{children}</span>;
 
@@ -432,27 +513,27 @@ const SectionLabel = ({ children }) =>
 const AboutPage = () =>
 <PagePlaceholder>
     <SectionLabel>about</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Hi, I'm Marcus.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px', textWrap: 'pretty' }}>CS undergrad at UCF. I'm a teaching assistant for Data Structures & Algorithms and work part time at a restaurant. Most of what I know comes from coursework I've taken seriously and side projects I've followed through on some distributed systems, some machine learning. I learn by building: a Redis clone in C++ to understand event loops from the socket up.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 14px', textWrap: 'pretty' }}>CS undergrad at UCF. I'm a teaching assistant for Data Structures & Algorithms and work part time at a restaurant. Most of what I know comes from coursework I've taken seriously and side projects I've followed through on some distributed systems, some machine learning. I learn by building: a Redis clone in C++ to understand event loops from the socket up.
 
   </p>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px', textWrap: 'pretty' }}>Lately I've been drawn to distributed systems and machine learning, and the places where the two overlap. Outside of academics, I have a passion for cars, working on them in the garage with a few tools, and enjoy scenic journeys through nature. I play video games with friends and enjoy using coding tools into the day to day around them.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 14px', textWrap: 'pretty' }}>Lately I've been drawn to distributed systems and machine learning, and the places where the two overlap. Outside of academics, I have a passion for cars, working on them in the garage with a few tools, and enjoy scenic journeys through nature. I play video games with friends and enjoy using coding tools into the day to day around them.
 
   </p>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px', textWrap: 'pretty' }}>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 28px', textWrap: 'pretty' }}>
       I like things I can take apart and put back together: code, cars, ranked ladders. Same instinct, different tools.
     </p>
-    <div style={{ display: 'flex', gap: 24, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 24, paddingTop: 20, borderTop: '1px solid var(--line)', flexWrap: 'wrap' }}>
       {[
     ['based in', 'Orlando, FL'],
     ['working on', 'Learning Nixtla'],
     ['reading', 'Meditations - Marcus Aurelius']].
     map(([k, v]) =>
     <div key={k}>
-          <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 }}>{k}</div>
-          <div style={{ fontSize: 13, color: '#1a1a1a' }}>{v}</div>
+          <div className="mono" style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 }}>{k}</div>
+          <div style={{ fontSize: 13, color: 'var(--ink)' }}>{v}</div>
         </div>
     )}
     </div>
@@ -471,7 +552,7 @@ const projects = [
 const ProjectsPage = ({ accent }) =>
 <PagePlaceholder>
     <SectionLabel>projects · {projects.length} shipped</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: '#1a1a1a' }}>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Things I've put into the world.
     </h1>
     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
@@ -489,14 +570,14 @@ const ProjectsPage = ({ accent }) =>
         alignItems: 'start',
         gap: 20,
         padding: '22px 0',
-        borderTop: '1px solid rgba(0,0,0,0.08)',
+        borderTop: '1px solid var(--line)',
         cursor: 'pointer'
       }}>
       
-          <span className="mono" style={{ fontSize: 11, color: '#8a8580', paddingTop: 4 }}>{p.year}</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-faint)', paddingTop: 4 }}>{p.year}</span>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 500, color: '#1a1a1a', marginBottom: 6 }}>{p.name}</div>
-            <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)', marginBottom: 6 }}>{p.name}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {p.live &&
           <span
@@ -504,18 +585,18 @@ const ProjectsPage = ({ accent }) =>
             onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
             style={{
               fontSize: 10, padding: '2px 7px', borderRadius: 4,
-              background: 'rgba(21,128,61,0.14)', color: '#15803d',
+              background: 'var(--live-bg)', color: 'var(--live-fg)',
               display: 'inline-flex', alignItems: 'center', gap: 4,
               cursor: 'pointer'
             }}>
-            <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#15803d' }}/>
+            <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--live-fg)' }}/>
             live
           </span>
           }
             {p.tags.map((t) =>
           <span key={t} className="mono" style={{
             fontSize: 10, padding: '2px 7px', borderRadius: 4,
-            background: 'rgba(0,0,0,0.04)', color: '#5a5a55'
+            background: 'var(--chip)', color: 'var(--ink-soft)'
           }}>{t}</span>
           )}
             </div>
@@ -540,31 +621,31 @@ const stackGroups = [
 const StackPage = ({ accent }) =>
 <PagePlaceholder>
     <SectionLabel>stack · what i reach for</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Tools on the bench.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480, textWrap: 'pretty' }}>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 32px', maxWidth: 480, textWrap: 'pretty' }}>
       What I'm comfortable with, what I'm learning, and what I'd happily go deeper on.
     </p>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       {stackGroups.map(g =>
       <div key={g.label}>
-        <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>
+        <div className="mono" style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>
           {g.label}
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {g.items.map(t =>
           <span key={t} className="mono" style={{
             fontSize: 11, padding: '5px 10px', borderRadius: 6,
-            background: 'rgba(0,0,0,0.04)', color: '#3a3a36',
-            border: '1px solid rgba(0,0,0,0.06)',
+            background: 'var(--chip)', color: 'var(--ink-body)',
+            border: '1px solid var(--chip-line)',
           }}>{t}</span>
           )}
         </div>
       </div>
       )}
     </div>
-    <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
+    <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink-faint)', fontSize: 12 }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }}/>
       <span className="mono">currently sharpening: distributed systems, ML infra</span>
     </div>
@@ -650,10 +731,10 @@ const ResumeSection = ({ label, children }) => (
       display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
     }}>
       <span className="mono" style={{
-        fontSize: 11, color: '#1a1a1a', letterSpacing: 1.6,
+        fontSize: 11, color: 'var(--ink)', letterSpacing: 1.6,
         textTransform: 'uppercase', fontWeight: 500,
       }}>{label}</span>
-      <span style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.12)' }}/>
+      <span style={{ flex: 1, height: 1, background: 'var(--line-strong)' }}/>
     </div>
     {children}
   </section>
@@ -662,13 +743,13 @@ const ResumeSection = ({ label, children }) => (
 const ResumeRow = ({ left, right, sub, subRight, children }) => (
   <div style={{ marginBottom: children ? 14 : 10 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
-      <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1a1a1a' }}>{left}</span>
-      <span className="mono" style={{ fontSize: 11, color: '#5a5a55' }}>{right}</span>
+      <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--ink)' }}>{left}</span>
+      <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{right}</span>
     </div>
     {(sub || subRight) && (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginTop: 2 }}>
-        <span style={{ fontSize: 13, color: '#5a5a55', fontStyle: 'italic' }}>{sub}</span>
-        <span className="mono" style={{ fontSize: 11, color: '#5a5a55' }}>{subRight}</span>
+        <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>{sub}</span>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{subRight}</span>
       </div>
     )}
     {children && (
@@ -678,10 +759,10 @@ const ResumeRow = ({ left, right, sub, subRight, children }) => (
       }}>
         {children.map((b, i) => (
           <li key={i} style={{
-            fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty',
+            fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty',
             paddingLeft: 16, position: 'relative',
           }}>
-            <span style={{ position: 'absolute', left: 0, top: 0, color: '#8a8580' }}>·</span>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: 'var(--ink-faint)' }}>·</span>
             {b}
           </li>
         ))}
@@ -702,7 +783,7 @@ const ResumePage = ({ accent }) => {
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
         <div>
           <SectionLabel>resume · {new Date().getFullYear()}</SectionLabel>
-          <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: 0, lineHeight: 1.1, color: '#1a1a1a' }}>
+          <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: 0, lineHeight: 1.1, color: 'var(--ink)' }}>
             Resume.
           </h1>
         </div>
@@ -725,25 +806,25 @@ const ResumePage = ({ accent }) => {
 
       {/* Resume sheet */}
       <article style={{
-        background: '#fbfaf6',
-        border: '1px solid rgba(0,0,0,0.08)',
+        background: 'var(--card)',
+        border: '1px solid var(--line)',
         borderRadius: 14,
         padding: '40px 48px 44px',
         boxShadow: '0 12px 40px rgba(10,10,10,0.06)',
       }}>
         {/* Header */}
-        <header style={{ textAlign: 'center', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+        <header style={{ textAlign: 'center', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid var(--line)' }}>
           <h2 style={{
             fontSize: 32, fontWeight: 500, letterSpacing: -0.8,
-            margin: '0 0 8px', color: '#0a0a0a',
+            margin: '0 0 8px', color: 'var(--ink-strong)',
           }}>{resumeData.name}</h2>
           <div style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 14, justifyContent: 'center' }}>
             {resumeData.links.map((l, i) => (
               <React.Fragment key={l.href}>
-                {i > 0 && <span style={{ color: '#bdbab2' }}>·</span>}
+                {i > 0 && <span style={{ color: 'var(--ink-ghost)' }}>·</span>}
                 <a href={l.href} target="_blank" rel="noopener"
                    className="mono"
-                   style={{ fontSize: 12, color: '#3a3a36', borderBottom: `1px solid ${accent}66` }}>
+                   style={{ fontSize: 12, color: 'var(--ink-body)', borderBottom: `1px solid ${accent}66` }}>
                   {l.label}
                 </a>
               </React.Fragment>
@@ -781,19 +862,19 @@ const ResumePage = ({ accent }) => {
           {resumeData.projects.map(p => (
             <div key={p.name} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-                <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1a1a1a' }}>{p.name}</span>
-                <span style={{ color: '#bdbab2' }}>|</span>
-                <span className="mono" style={{ fontSize: 11.5, color: '#5a5a55', fontStyle: 'italic' }}>
+                <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--ink)' }}>{p.name}</span>
+                <span style={{ color: 'var(--ink-ghost)' }}>|</span>
+                <span className="mono" style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic' }}>
                   {p.stack}
                 </span>
               </div>
               <ul style={{ margin: '6px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {p.bullets.map((b, i) => (
                   <li key={i} style={{
-                    fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty',
+                    fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty',
                     paddingLeft: 16, position: 'relative',
                   }}>
-                    <span style={{ position: 'absolute', left: 0, top: 0, color: '#8a8580' }}>·</span>
+                    <span style={{ position: 'absolute', left: 0, top: 0, color: 'var(--ink-faint)' }}>·</span>
                     {b}
                   </li>
                 ))}
@@ -805,8 +886,8 @@ const ResumePage = ({ accent }) => {
         <ResumeSection label="Technical Skills">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {resumeData.skills.map(s => (
-              <div key={s.label} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty' }}>
-                <span style={{ fontWeight: 600, color: '#1a1a1a', minWidth: 120 }}>{s.label}:</span>
+              <div key={s.label} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty' }}>
+                <span style={{ fontWeight: 600, color: 'var(--ink)', minWidth: 120 }}>{s.label}:</span>
                 <span>{s.items}</span>
               </div>
             ))}
@@ -814,8 +895,8 @@ const ResumePage = ({ accent }) => {
         </ResumeSection>
 
         <div className="mono" style={{
-          marginTop: 28, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.06)',
-          fontSize: 10, color: '#8a8580', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+          marginTop: 28, paddingTop: 16, borderTop: '1px solid var(--chip-line)',
+          fontSize: 10, color: 'var(--ink-faint)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
         }}>
           <span>polter-dev · marcus ruth</span>
           <span>last updated · {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
@@ -829,22 +910,22 @@ const ResumePage = ({ accent }) => {
 const ChatPage = ({ accent }) =>
 <PagePlaceholder>
     <SectionLabel>ask me · beta</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Under construction.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px', maxWidth: 480, textWrap: 'pretty' }}>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 28px', maxWidth: 480, textWrap: 'pretty' }}>
       A LLM-powered chat trained on my background, so you can ask the questions you'd normally save for a call. Come back soon when it's ready.
     </p>
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '14px 16px',
-      background: '#fbfaf6',
-      border: '1px dashed rgba(0,0,0,0.15)',
+      background: 'var(--card)',
+      border: '1px dashed var(--line-dash)',
       borderRadius: 12,
       maxWidth: 480,
     }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
-      <span className="mono" style={{ fontSize: 12, color: '#5a5a55' }}>status: wiring it up · coming soon</span>
+      <span className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>status: wiring it up · coming soon</span>
     </div>
   </PagePlaceholder>;
 
@@ -1118,27 +1199,27 @@ const ContactForm = ({ accent }) => {
   };
 
   const cardStyle = {
-    maxWidth: 620, background: '#fbfaf6',
-    border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden'
+    maxWidth: 620, background: 'var(--card)',
+    border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden'
   };
   const rowStyle = (name) => ({
     display: 'flex', alignItems: 'flex-start', gap: 14,
     padding: '13px 18px',
-    borderBottom: '1px solid rgba(0,0,0,0.06)',
-    background: focused === name ? '#f4f1ea' : 'transparent',
+    borderBottom: '1px solid var(--chip-line)',
+    background: focused === name ? 'var(--card-tint)' : 'transparent',
     transition: 'background 0.15s ease'
   });
   const labelStyle = (name) => ({
     fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase',
-    color: errors[name] ? '#b4432a' : focused === name ? accent : '#8a8580',
+    color: errors[name] ? 'var(--err)' : focused === name ? accent : 'var(--ink-faint)',
     width: 88, flexShrink: 0, paddingTop: 4, transition: 'color 0.15s ease'
   });
   const inputStyle = {
     flex: 1, minWidth: 0, border: 'none', background: 'transparent',
     outline: 'none', fontFamily: 'Geist, sans-serif', fontSize: 14,
-    color: '#1a1a1a', padding: 0
+    color: 'var(--ink)', padding: 0
   };
-  const errTag = { fontSize: 10, color: '#b4432a', letterSpacing: 0.4, paddingTop: 5, flexShrink: 0, whiteSpace: 'nowrap', fontFamily: 'Geist Mono, monospace' };
+  const errTag = { fontSize: 10, color: 'var(--err)', letterSpacing: 0.4, paddingTop: 5, flexShrink: 0, whiteSpace: 'nowrap', fontFamily: 'Geist Mono, monospace' };
   const row = (name, opts) =>
     <div style={rowStyle(name)}>
       <span className="mono" style={labelStyle(name)}>{opts.label}</span>
@@ -1154,8 +1235,8 @@ const ContactForm = ({ accent }) => {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '22px 20px' }}>
           <span style={{ width: 8, height: 8, marginTop: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
           <div>
-            <div style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 500, marginBottom: 3 }}>Message sent.</div>
-            <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55 }}>Thanks for reaching out. I'll get back to you soon.</div>
+            <div style={{ fontSize: 14, color: 'var(--ink)', fontWeight: 500, marginBottom: 3 }}>Message sent.</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.55 }}>Thanks for reaching out. I'll get back to you soon.</div>
           </div>
         </div>
       </M.div>
@@ -1165,13 +1246,13 @@ const ContactForm = ({ accent }) => {
     <form onSubmit={submit} noValidate style={cardStyle}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-        padding: '14px 18px', background: '#f4f1ea', borderBottom: '1px solid rgba(0,0,0,0.07)'
+        padding: '14px 18px', background: 'var(--card-tint)', borderBottom: '1px solid var(--line-soft)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, color: '#1a1a1a' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, color: 'var(--ink)' }}>
           <Icon name="mail" size={14} />
           <span style={{ fontSize: 13, fontWeight: 500 }}>New message</span>
         </div>
-        <span className="mono" style={{ fontSize: 11, color: '#8a8580', letterSpacing: 0.4 }}>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: 0.4 }}>
           to <span style={{ color: accent }}>contact@polter.sh</span>
         </span>
       </div>
@@ -1195,7 +1276,7 @@ const ContactForm = ({ accent }) => {
         <input type="text" value={values.signature} onChange={set('signature')}
           onFocus={() => setFocused('signature')} onBlur={() => setFocused(null)}
           placeholder="e.g. Jane, Recruiter @ Acme" style={inputStyle} />
-        <span className="mono" style={{ fontSize: 10, color: '#b0aca4', letterSpacing: 0.8, paddingTop: 5, flexShrink: 0 }}>optional</span>
+        <span className="mono" style={{ fontSize: 10, color: 'var(--ink-placeholder)', letterSpacing: 0.8, paddingTop: 5, flexShrink: 0 }}>optional</span>
       </div>
 
       <div style={{
@@ -1203,10 +1284,10 @@ const ContactForm = ({ accent }) => {
         padding: '14px 18px'
       }}>
         <span className="mono" style={{
-          fontSize: 12, color: '#b4432a', display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 12, color: 'var(--err)', display: 'flex', alignItems: 'center', gap: 8,
           opacity: status === 'error' ? 1 : 0, transition: 'opacity 0.15s ease'
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b4432a', flexShrink: 0 }} />
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--err)', flexShrink: 0 }} />
           Something went wrong. Try again.
         </span>
         <button type="submit" disabled={status === 'sending'}
@@ -1237,25 +1318,25 @@ const ContactPage = ({ accent, navigate }) => {
   return (
   <PagePlaceholder>
     <SectionLabel>contact · ↓</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 24px', lineHeight: 1.1, color: '#1a1a1a' }}>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 24px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Send a short note.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>I read everything. I reply to most. Email is the fastest path. I check it several times a day, so feel free to send one whenever.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 32px', maxWidth: 480 }}>I read everything. I reply to most. Email is the fastest path. I check it several times a day, so feel free to send one whenever.
 
   </p>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'var(--line)', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--chip-line)' }}>
       {rows.map(([k, v, icon, href]) => {
     const isEmail = k === 'email';
     const inner = <React.Fragment>
-          <div style={{ color: isEmail && emailHover ? accent : '#8a8580', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
-          <span className="mono" style={{ fontSize: 11, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, width: 64 }}>{k}</span>
+          <div style={{ color: isEmail && emailHover ? accent : 'var(--ink-faint)', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: 1.2, width: 64 }}>{k}</span>
           {href ? (
             <a href={href} target="_blank" rel="noopener noreferrer"
-               style={{ fontSize: 14, color: '#1a1a1a', fontFamily: 'Geist Mono, monospace', textDecoration: 'none' }}>
+               style={{ fontSize: 14, color: 'var(--ink)', fontFamily: 'Geist Mono, monospace', textDecoration: 'none' }}>
               {v}
             </a>
           ) : (
-            <span style={{ fontSize: 14, color: '#1a1a1a', fontFamily: 'Geist Mono, monospace' }}>{v}</span>
+            <span style={{ fontSize: 14, color: 'var(--ink)', fontFamily: 'Geist Mono, monospace' }}>{v}</span>
           )}
           {isEmail &&
             <span className="mono" style={{
@@ -1277,16 +1358,16 @@ const ContactPage = ({ accent, navigate }) => {
         onMouseEnter={() => setEmailHover(true)} onMouseLeave={() => setEmailHover(false)}
         style={{
           display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-          background: emailHover ? '#f6f4ee' : '#fbfaf6', cursor: 'pointer',
+          background: emailHover ? 'var(--card-hover)' : 'var(--card)', cursor: 'pointer',
           transition: 'background 0.15s ease'
         }}>{inner}</div>;
     return <div key={k} style={{
       display: 'flex', alignItems: 'center', gap: 14,
-      padding: '14px 16px', background: '#fbfaf6'
+      padding: '14px 16px', background: 'var(--card)'
     }}>{inner}</div>;
       })}
     </div>
-    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
+    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink-faint)', fontSize: 12 }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }} />
       <span className="mono">currently accepting summer 2027 internships</span>
     </div>
@@ -1304,7 +1385,7 @@ const ComposePage = ({ accent, navigate }) => {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 26,
         fontFamily: 'Geist Mono, monospace', fontSize: 12, letterSpacing: 0.4,
-        color: backHover ? accent : '#8a8580', background: 'transparent',
+        color: backHover ? accent : 'var(--ink-faint)', background: 'transparent',
         border: 'none', padding: 0, cursor: 'pointer', transition: 'color 0.15s ease'
       }}>
       <Icon name="arrow-left" size={13} />
@@ -1330,13 +1411,19 @@ function App() {
   const [route, setRoute] = useState('/');
   const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
   const [hint, setHint] = useState(true);
+  const [theme, setTheme] = useState(() => {
+    try { return window.localStorage.getItem('polter_theme') || 'light'; } catch (e) { return 'light'; }
+  });
   const [pillHover, setPillHover] = useState(false);
 
-  // sync background CSS var
+  // sync background CSS var + theme
   useEffect(() => {
-    document.documentElement.style.setProperty('--color-bg', tweaks.background);
+    const dark = theme === 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.setProperty('--color-bg', dark ? '#171512' : tweaks.background);
     document.documentElement.style.setProperty('--color-accent', tweaks.accent);
-  }, [tweaks.background, tweaks.accent]);
+    try { window.localStorage.setItem('polter_theme', theme); } catch (e) {}
+  }, [tweaks.background, tweaks.accent, theme]);
 
   // hide hint after navigation
   useEffect(() => {
@@ -1397,17 +1484,20 @@ function App() {
         position: 'fixed', top: 18, left: 22,
         display: 'flex', alignItems: 'center', gap: 8,
         zIndex: 5, fontFamily: 'Geist Mono, monospace',
-        fontSize: 11, color: '#8a8580', letterSpacing: 0.6
+        fontSize: 11, color: 'var(--ink-faint)', letterSpacing: 0.6
       }}>
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: tweaks.accent, boxShadow: `0 0 0 3px ${tweaks.accent}22` }} />
         polter-dev
       </div>
       <div style={{
         position: 'fixed', top: 18, right: 22,
-        fontFamily: 'Geist Mono, monospace',
-        fontSize: 11, color: '#8a8580', letterSpacing: 0.6, zIndex: 5
+        display: 'flex', alignItems: 'center', gap: 10, zIndex: 5
       }}>
-        v0.4.2 - orlando, fl
+        <span style={{
+          fontFamily: 'Geist Mono, monospace',
+          fontSize: 11, color: 'var(--ink-faint)', letterSpacing: 0.6
+        }}>v0.4.2 - orlando, fl</span>
+        <ThemeToggle theme={theme} onToggle={() => setTheme((t) => t === 'dark' ? 'light' : 'dark')} />
       </div>
 
       {/* Pill — anchored differently on landing vs inner */}
@@ -1472,12 +1562,12 @@ function App() {
               onClick={() => setRoute('/')}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                fontSize: 12, color: '#8a8580',
+                fontSize: 12, color: 'var(--ink-faint)',
                 fontFamily: 'Geist Mono, monospace'
               }}>
               
                 <Icon name="arrow-left" size={12} />
-                back home <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#8a8580', borderColor: 'rgba(0,0,0,0.08)' }}>esc</span>
+                back home <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-faint)', borderColor: 'var(--line)' }}>esc</span>
               </button>
             </div>
           </M.div>
@@ -1502,22 +1592,22 @@ function App() {
             transform: 'translateX(-50%)',
             display: 'flex', alignItems: 'center', gap: 8,
             fontFamily: 'Geist Mono, monospace',
-            fontSize: 11, color: '#8a8580',
+            fontSize: 11, color: 'var(--ink-faint)',
             zIndex: 5,
             padding: isLanding ? 0 : '8px 14px',
-            background: isLanding ? 'transparent' : 'rgba(251,250,246,0.85)',
+            background: isLanding ? 'transparent' : 'var(--card-glass)',
             backdropFilter: isLanding ? 'none' : 'blur(8px)',
-            border: isLanding ? 'none' : '1px solid rgba(0,0,0,0.06)',
+            border: isLanding ? 'none' : '1px solid var(--chip-line)',
             borderRadius: 999,
           }}>
           
             <span>navigate</span>
-            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>A</span>
-            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>P</span>
-            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>S</span>
-            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>K</span>
-            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>R</span>
-            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>C</span>
+            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>A</span>
+            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>P</span>
+            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>S</span>
+            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>K</span>
+            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>R</span>
+            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>C</span>
             <span>· esc to home · or click the pill</span>
           </M.div>
         }
@@ -1535,7 +1625,7 @@ function App() {
             position: 'fixed', bottom: 32, left: '50%',
             transform: 'translateX(-50%)',
             padding: '10px 16px',
-            background: '#0a0a0a', color: 'white',
+            background: 'var(--color-surface)', color: 'white',
             borderRadius: 999, fontSize: 12,
             fontFamily: 'Geist Mono, monospace',
             boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
