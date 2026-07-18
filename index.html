@@ -11,6 +11,7 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<script src="ai-backdrop.js" data-variant="nodes"></script>
 <style>
   :root {
     --color-bg: #F4F1EC;
@@ -1423,7 +1424,16 @@ function App() {
     document.documentElement.style.setProperty('--color-bg', dark ? '#171512' : tweaks.background);
     document.documentElement.style.setProperty('--color-accent', tweaks.accent);
     try { window.localStorage.setItem('polter_theme', theme); } catch (e) {}
+    if (window.AIBackdrop) window.AIBackdrop.setTheme(theme);
   }, [tweaks.background, tweaks.accent, theme]);
+
+  // backdrop reacts to navigation: pulse + calmer on content pages
+  useEffect(() => {
+    if (window.AIBackdrop) {
+      window.AIBackdrop.pulse(1);
+      window.AIBackdrop.setIntensity(route === '/' ? 1 : 0.55);
+    }
+  }, [route]);
 
   // hide hint after navigation
   useEffect(() => {
@@ -1677,6 +1687,18 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<script>
+(function () {
+  var lastPulse = 0;
+  document.addEventListener('pointerover', function (e) {
+    if (!window.AIBackdrop || !e.target || !e.target.closest) return;
+    if (e.target.closest('button, a, [role="button"], li[style*="cursor"]')) {
+      var now = Date.now();
+      if (now - lastPulse > 300) { lastPulse = now; AIBackdrop.pulse(0.35); }
+    }
+  }, true);
+})();
 </script>
 </body>
 </html>
