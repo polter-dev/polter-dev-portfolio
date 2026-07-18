@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcus - Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<script src="ai-backdrop.js"></script>
+<style>
+  :root {
+    --color-bg: #F4F1EC;
+    --color-surface: #0A0A0A;
+    --color-text: #ffffff;
+    --color-muted: #8a8a8a;
+    --color-accent: #10B981;
+    --color-divider: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--color-bg);
+    font-family: 'Geist', -apple-system, sans-serif;
+    color: #1a1a1a;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { height: 100%; }
+  .mono { font-family: 'Geist Mono', monospace; }
+
+  /* Background grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.025) 1px, transparent 0);
+    background-size: 4px 4px;
+    z-index: 1;
+  }
+
+  button {
+    font-family: inherit;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* Focus visible */
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 999px;
+  }
+
+  /* Accent shimmer */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* keyboard hint */
+  .kbd {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  .msg-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #b0aca4;
+    pointer-events: none;
+  }
+  .msg-editor a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .fmt-bar {
+    opacity: 0.78;
+    transition: opacity 0.18s ease;
+  }
+  .msg-wrap:focus-within .fmt-bar { opacity: 0.9; }
+  .fmt-bar:hover { opacity: 1; }
+  .fmt-trigger {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 22px; padding: 0 5px; user-select: none;
+    color: rgba(255,255,255,0.78); font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .fmt-tools {
+    display: inline-flex; align-items: center; gap: 1px;
+    max-width: 0; opacity: 0; overflow: hidden;
+    transition: max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
+  }
+  .fmt-bar:hover .fmt-tools { max-width: 340px; opacity: 1; margin-left: 3px; }
+  .link-pop input::placeholder { color: rgba(255,255,255,0.45); }
+  .fmt-sep { width: 1px; height: 15px; background: rgba(255,255,255,0.16); margin: 0 3px; flex-shrink: 0; }
+  .fmt-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+    color: rgba(255,255,255,0.62); cursor: pointer;
+    font-size: 12px; line-height: 1; user-select: none;
+    transition: background 0.14s ease, color 0.14s ease;
+  }
+  .fmt-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .live-badge { transition: background 0.14s ease, color 0.14s ease; }
+  .live-badge:hover { background: #15803d !important; color: #fff !important; }
+  .live-badge:hover .live-dot { background: #fff !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+
+
+
+const { useState, useEffect, useRef, useMemo } = React;
+const { motion, AnimatePresence, LayoutGroup } = window.Motion || window.FramerMotion || {};
+
+// fallback if framer-motion didn't load under Motion namespace
+const M = window.Motion && window.Motion.motion || window.FramerMotion && window.FramerMotion.motion;
+const AP = window.Motion && window.Motion.AnimatePresence || window.FramerMotion && window.FramerMotion.AnimatePresence;
+const LG = window.Motion && window.Motion.LayoutGroup || window.FramerMotion && window.FramerMotion.LayoutGroup;
+
+// ----- Icons (Lucide-style, hand-traced) -----
+const Icon = ({ name, size = 16 }) => {
+  const props = {
+    width: size, height: size, viewBox: "0 0 24 24",
+    fill: "none", stroke: "currentColor", strokeWidth: 2,
+    strokeLinecap: "round", strokeLinejoin: "round"
+  };
+  switch (name) {
+    case "user":
+      return <svg {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>;
+    case "code":
+      return <svg {...props}><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>;
+    case "folder":
+      return <svg {...props}><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" /><path d="m9 13 2 2 4-4" /></svg>;
+    case "mail":
+      return <svg {...props}><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>;
+    case "github":
+      return <svg {...props}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>;
+    case "download":
+      return <svg {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>;
+    case "arrow-left":
+      return <svg {...props}><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>;
+    case "arrow-up-right":
+      return <svg {...props}><path d="M7 7h10v10" /><path d="M7 17 17 7" /></svg>;
+    case "external":
+      return <svg {...props}><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>;
+    case "command":
+      return <svg {...props}><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" /></svg>;
+    case "circle":
+      return <svg {...props}><circle cx="12" cy="12" r="3" /></svg>;
+    case "layers":
+      return <svg {...props}><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>;
+    case "sparkle":
+      return <svg {...props}><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/><path d="M5.6 5.6l4.2 4.2M14.2 14.2l4.2 4.2M18.4 5.6l-4.2 4.2M9.8 14.2l-4.2 4.2"/></svg>;
+    case "moon":
+      return <svg {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
+    case "linkedin":
+      return <svg {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>;
+    case "message":
+      return <svg {...props}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>;
+    default:return null;
+  }
+};
+
+// ----- Avatar -----
+const Avatar = ({ size = 32 }) =>
+<div style={{
+  width: size, height: size, borderRadius: '50%',
+  flexShrink: 0,
+  boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.4)',
+  background: '#f4f1ec',
+  backgroundImage: 'url(avatar.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  position: 'relative'
+}} />;
+
+
+// ----- Nav buttons -----
+const navItems = [
+{ id: 'about', label: 'About', icon: 'user', route: '/about', key: 'a' },
+{ id: 'projects', label: 'Projects', icon: 'code', route: '/projects', key: 'p' },
+{ id: 'stack', label: 'Stack', icon: 'layers', route: '/stack', key: 's' },
+{ id: 'chat', label: 'Ask Me', icon: 'message', route: '/chat', key: 'k' },
+{ id: 'contact', label: 'Contact', icon: 'mail', route: '/contact', key: 'c' },
+{ id: 'github', label: 'GitHub', icon: 'github', route: '__external', url: 'https://github.com/polter-dev', key: 'g', external: true }];
+
+
+const NavIconButton = ({ item, active, compact, onNavigate, accent }) => {
+  const [hover, setHover] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const showTip = hover || focus;
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <M.button
+        onClick={(e) => {
+          setHover(false);
+          setFocus(false);
+          e.currentTarget.blur();
+          onNavigate(item);
+        }}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        aria-label={item.label}
+        style={{
+          width: compact ? 32 : 36,
+          height: compact ? 32 : 36,
+          borderRadius: '50%',
+          background: active ? accent : 'rgba(255,255,255,0.04)',
+          color: active ? '#0a0a0a' : 'rgba(255,255,255,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 200ms, color 200ms',
+          position: 'relative'
+        }}>
+        
+        <Icon name={item.icon} size={compact ? 14 : 16} />
+        {item.external &&
+        <span style={{
+          position: 'absolute', top: 4, right: 4, width: 5, height: 5,
+          borderRadius: '50%', background: 'rgba(255,255,255,0.4)'
+        }} />
+        }
+      </M.button>
+      <AP>
+        {showTip &&
+        <M.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 14px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#0a0a0a',
+            color: 'white',
+            fontSize: 11,
+            padding: '5px 10px',
+            borderRadius: 6,
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+            fontFamily: 'Geist Mono, monospace',
+            letterSpacing: 0.3,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            zIndex: 30
+          }}>
+          
+            {item.label}
+            <span className="kbd" style={{ fontSize: 9, padding: '1px 5px' }}>{item.key.toUpperCase()}</span>
+          </M.div>
+        }
+      </AP>
+    </div>);
+
+};
+
+// ----- The Pill -----
+const Pill = ({ route, onNavigate, accent, showName, forceCompact, tiny }) => {
+  const compact = route !== '/' || forceCompact;
+  const showLabel = showName && !compact && !tiny;
+
+  return (
+    <M.div
+      layout
+      layoutId="main-pill"
+      transition={{ type: 'tween', duration: 0.42, ease: [0.32, 0.72, 0, 1] }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: tiny ? 6 : (compact ? 10 : 14),
+        padding: tiny ? '5px' : (compact ? '6px 6px 6px 10px' : '8px 8px 8px 12px'),
+        background: 'var(--color-surface)',
+        borderRadius: 999,
+        boxShadow: compact || tiny ?
+        '0 4px 16px rgba(10,10,10,0.12), 0 1px 2px rgba(0,0,0,0.06)' :
+        '0 12px 40px rgba(10,10,10,0.18), 0 2px 6px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        zIndex: 20
+      }}>
+      
+      <M.div key="avatar" layout="position">
+        <Avatar size={tiny ? 34 : (compact ? 26 : 36)} />
+      </M.div>
+
+      {showLabel &&
+      <M.div
+        key="label"
+        layout="position"
+        style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, paddingRight: 4 }}>
+        
+          <span className="mono" style={{ fontSize: 10, color: 'var(--color-muted)', letterSpacing: 1, textTransform: 'uppercase' }}>
+            Hello, I'm
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'white', letterSpacing: -0.2 }}>Marcus
+
+        </span>
+        </M.div>
+      }
+
+      {compact && !tiny &&
+      <M.span
+        key="compact-name"
+        layout="position"
+        style={{ fontSize: 12, fontWeight: 500, color: 'white', letterSpacing: -0.1, paddingRight: 2 }}>
+        
+          Marcus
+        </M.span>
+      }
+
+      {!tiny && <M.div key="div1" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />}
+
+      {!tiny && <M.div key="nav" layout="position" style={{ display: 'flex', gap: compact ? 2 : 4, alignItems: 'center' }}>
+        {navItems.map((item) =>
+        <NavIconButton
+          key={item.id}
+          item={item}
+          active={route === item.route}
+          compact={compact}
+          onNavigate={onNavigate}
+          accent={accent} />
+
+        )}
+      </M.div>}
+
+      {!tiny && <M.div key="div2" layout="position" style={{ width: 1, height: compact ? 18 : 24, background: 'var(--color-divider)' }} />}
+
+      <M.button
+        key="resume"
+        layout
+        onClick={() => onNavigate({ id: 'resume', route: '/resume' })}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ layout: { type: 'tween', duration: 0.42, ease: [0.32, 0.72, 0, 1] }, default: { type: 'spring', stiffness: 500, damping: 30 } }}
+        aria-label={tiny ? 'Open portfolio' : 'View Resume'}
+        style={{
+          height: tiny ? 34 : (compact ? 32 : 36),
+          width: tiny ? 34 : 'auto',
+          padding: tiny ? 0 : (compact ? '0 12px' : '0 16px'),
+          borderRadius: 999,
+          background: accent,
+          color: '#062b1f',
+          fontWeight: 600,
+          fontSize: compact ? 12 : 13,
+          letterSpacing: -0.1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: `0 0 0 1px ${accent}, 0 4px 14px ${accent}55`
+        }}>
+        
+        <span style={{
+          position: 'absolute', inset: 0,
+          background: `linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%)`,
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 2.8s linear infinite',
+          pointerEvents: 'none'
+        }} />
+        {tiny ? (
+          <M.span layout="position" key="tiny-mark" style={{ display: 'flex' }}>
+            <Icon name="sparkle" size={14} />
+          </M.span>
+        ) : (
+          <M.span layout="position" key="full-mark" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="download" size={compact ? 12 : 14} />
+            <M.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+              style={{ position: 'relative', whiteSpace: 'nowrap' }}
+            >Resume</M.span>
+          </M.span>
+        )}
+      </M.button>
+    </M.div>);
+
+};
+
+// ----- Inner page content -----
+const PagePlaceholder = ({ children }) =>
+<M.div
+  initial={{ opacity: 0, y: 16 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -8 }}
+  transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+  style={{ maxWidth: 640, margin: '0 auto', padding: '0 32px' }}>
+  
+    {children}
+  </M.div>;
+
+
+const SectionLabel = ({ children }) =>
+<span className="mono" style={{
+  fontSize: 11, color: '#8a8580', letterSpacing: 1.4,
+  textTransform: 'uppercase', display: 'inline-block', marginBottom: 16
+}}>{children}</span>;
+
+
+const AboutPage = () =>
+<PagePlaceholder>
+    <SectionLabel>about</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Hi, I'm Marcus.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px', textWrap: 'pretty' }}>CS undergrad at UCF. I'm a teaching assistant for Data Structures & Algorithms and work part time at a restaurant. Most of what I know comes from coursework I've taken seriously and side projects I've followed through on some distributed systems, some machine learning. I learn by building: a Redis clone in C++ to understand event loops from the socket up.
+
+  </p>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 14px', textWrap: 'pretty' }}>Lately I've been drawn to distributed systems and machine learning, and the places where the two overlap. Outside of academics, I have a passion for cars, working on them in the garage with a few tools, and enjoy scenic journeys through nature. I play video games with friends and enjoy using coding tools into the day to day around them.
+
+  </p>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px', textWrap: 'pretty' }}>
+      I like things I can take apart and put back together: code, cars, ranked ladders. Same instinct, different tools.
+    </p>
+    <div style={{ display: 'flex', gap: 24, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
+      {[
+    ['based in', 'Orlando, FL'],
+    ['working on', 'Learning Nixtla'],
+    ['reading', 'Meditations - Marcus Aurelius']].
+    map(([k, v]) =>
+    <div key={k}>
+          <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 }}>{k}</div>
+          <div style={{ fontSize: 13, color: '#1a1a1a' }}>{v}</div>
+        </div>
+    )}
+    </div>
+  </PagePlaceholder>;
+
+
+const projects = [
+{ year: '2026', name: 'Terminal Presence', url: 'https://github.com/polter-dev/discord_terminal_presence', live: 'https://termp.polter.sh/', desc: "A command-line tool that shows friends on Discord what you're doing in the terminal, the same idea as the little “Playing...” status Discord shows for games, but for tools like Neovim, tmux, or Claude Code. It automatically detects which of 48 built-in CLI tools you're using, displays a running timer and the tool's logo, and lets you control exactly what's shown (like hiding your folder name) for privacy. Ships as a single Go binary, no bot, no token, nothing leaves your machine.", tags: ['Go', 'Discord Rich Presence', 'CLI', 'systems'] },
+{ year: '2026', name: 'CapChecker', url: 'https://github.com/azizu06/CapChecker', desc: "Built for the BloomKnights 2026 12-hour hackathon. Turns a short-form financial video into a source-backed claim scorecard: a streamed pipeline extracts claims with the Gemini API, grounds them against Google Search and live Finnhub market data via function calling, and emits a deterministic 0–100 “Cap Score” with per-claim evidence tiered by citation strength (primary, high, medium, low). Also ships a searchable, category-filtered feed of vetted YouTube videos that auto-refreshes new candidates behind reliability gating, backed by idempotent, safe-failing Supabase writes. Next.js + TypeScript, tested with Vitest and Playwright against credential-free fixtures, deployed on Vercel.", tags: ['Next.js', 'TypeScript', 'Gemini API', 'Supabase', 'Finnhub', 'Playwright'] },
+{ year: '2026', name: 'ScentStack', url: 'https://github.com/polter-dev/Fragrance-Searcher', desc: "Local-first fragrance deal aggregator for macOS. A Playwright crawler scrapes gray-market retailers on a schedule into SQLite, then normalizes and fuzzy-matches listings across sites to surface the best deals by effective $/mL after coupons and shipping. Features a cart optimizer that computes the cheapest per-site allocation given shipping thresholds and promo rules, price-drop detection vs each listing's trailing 30-day average, and a watchlist with target prices. FastAPI + SQLAlchemy backend with an APScheduler crawl every 12h, launchd job for background crawling, and a React + Vite + TypeScript frontend.", tags: ['Python', 'FastAPI', 'Playwright', 'SQLite', 'React', 'TypeScript'] },
+{ year: '2026', name: 'Course Scrapper', url: 'https://github.com/polter-dev/course-watcher', desc: "Polls Valencia College's Banner Self-Service API and sends Discord notifications when seats open in full course sections. Reverse-engineered the undocumented JSON endpoints and session flow, including a chk_open_only parameter that acts as an inverter and is cached per session \u2014 requiring two parallel HTTP sessions to fetch the full section list. Hardened with atomic state writes, file-locking against duplicate instances, and exponential backoff with jitter. Deployed 24/7 via macOS launchd with auto-restart on crash.", tags: ['Python', 'Banner SSB', 'Discord webhooks', 'launchd', 'systems'] },
+{ year: '2026', name: 'Nudge', url: 'https://github.com/polter-dev/Nudge', desc: 'Student accountability platform built on the T3 stack (Next.js, TypeScript, tRPC, Supabase) with a six-person team. Owned the backend: built the auth router with Zod-validated .edu email signup, protectedProcedure middleware against Supabase Auth, and orphaned-user rollback on failed profile inserts. Designed and shipped the full Postgres schema from ERD.', tags: ['TypeScript', 'tRPC', 'Supabase', 'Next.js', 'Zod'] },
+{ year: '2025', name: 'Miniredis CPP', url: 'https://github.com/polter-dev/miniredis_cpp', desc: 'Redis-like in-memory key-value store written from scratch in C++. TCP server on POSIX sockets with a poll()-based event loop, RESP3 protocol parsing with per-client read buffers for partial reads, and a custom chained hash table with incremental rehashing to avoid resize latency spikes. Supports GET, SET, PING, ECHO.', tags: ['C++', 'POSIX sockets', 'RESP3', 'systems'] }];
+
+
+const ProjectsPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>projects · {projects.length} shipped</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Things I've put into the world.
+    </h1>
+    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
+      {[...projects].sort((a, b) => b.year - a.year).map((p, i) =>
+    <M.li
+      key={p.name}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.25 + i * 0.06, duration: 0.4 }}
+      whileHover={{ x: 4 }}
+      onClick={() => window.open(p.url, '_blank', 'noopener')}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '54px 1fr auto',
+        alignItems: 'start',
+        gap: 20,
+        padding: '22px 0',
+        borderTop: '1px solid rgba(0,0,0,0.08)',
+        cursor: 'pointer'
+      }}>
+      
+          <span className="mono" style={{ fontSize: 11, color: '#8a8580', paddingTop: 4 }}>{p.year}</span>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: '#1a1a1a', marginBottom: 6 }}>{p.name}</div>
+            <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {p.live &&
+          <span
+            className="mono live-badge"
+            onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
+            style={{
+              fontSize: 10, padding: '2px 7px', borderRadius: 4,
+              background: 'rgba(21,128,61,0.14)', color: '#15803d',
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              cursor: 'pointer'
+            }}>
+            <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#15803d' }}/>
+            live
+          </span>
+          }
+            {p.tags.map((t) =>
+          <span key={t} className="mono" style={{
+            fontSize: 10, padding: '2px 7px', borderRadius: 4,
+            background: 'rgba(0,0,0,0.04)', color: '#5a5a55'
+          }}>{t}</span>
+          )}
+            </div>
+          </div>
+          <div style={{ color: accent, opacity: 0.7, paddingTop: 4 }}>
+            <Icon name="arrow-up-right" size={14} />
+          </div>
+        </M.li>
+    )}
+    </ul>
+  </PagePlaceholder>;
+
+
+const stackGroups = [
+  { label: 'languages',  items: ['Python', 'Java', 'C', 'C++', 'Go', 'TypeScript', 'JavaScript', 'SQL'] },
+  { label: 'web',        items: ['Next.js', 'tRPC', 'Zod', 'Supabase', 'Postgres', 'React'] },
+  { label: 'libraries',  items: ['NumPy', 'pandas', 'Matplotlib', 'Seaborn', 'scikit-learn', 'Nixtla'] },
+  { label: 'developer tools', items: ['Git', 'VS Code', 'Unix / Linux', 'AWS', 'PostgreSQL', 'Docker', 'tmux', 'neovim'] },
+  { label: 'concepts',   items: ['data structures', 'algorithms', 'distributed systems', 'forecasting'] },
+];
+
+const StackPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>stack · what i reach for</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Tools on the bench.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480, textWrap: 'pretty' }}>
+      What I'm comfortable with, what I'm learning, and what I'd happily go deeper on.
+    </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      {stackGroups.map(g =>
+      <div key={g.label}>
+        <div className="mono" style={{ fontSize: 10, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>
+          {g.label}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {g.items.map(t =>
+          <span key={t} className="mono" style={{
+            fontSize: 11, padding: '5px 10px', borderRadius: 6,
+            background: 'rgba(0,0,0,0.04)', color: '#3a3a36',
+            border: '1px solid rgba(0,0,0,0.06)',
+          }}>{t}</span>
+          )}
+        </div>
+      </div>
+      )}
+    </div>
+    <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }}/>
+      <span className="mono">currently sharpening: distributed systems, ML infra</span>
+    </div>
+  </PagePlaceholder>;
+
+
+// Resume content as data — rendered natively in HTML, no PDF viewer chrome
+const resumeData = {
+  name: 'Marcus Ruth',
+  links: [
+    { label: 'linkedin.com/in/marcusruth', href: 'https://linkedin.com/in/marcusruth' },
+    { label: 'github.com/polter-dev',      href: 'https://github.com/polter-dev' },
+  ],
+  education: [
+    { school: 'University of Central Florida', degree: 'Bachelor of Science in Computer Science', dates: 'Aug. 2024 – May 2027', loc: 'Orlando, FL' },
+    { school: 'Valencia College',              degree: 'Associates of Arts - General Studies',     dates: 'Aug. 2022 - May 2024', loc: 'Orlando, FL' },
+  ],
+  experience: [
+    {
+      org: 'University of Central Florida',
+      role: 'Teaching Assistant - Data Structures & Algorithms (COP 3502C)',
+      dates: 'Jan 2025 – Present', loc: 'Orlando, FL',
+      bullets: [
+        'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables), instructing over 100 students per semester.',
+        'Designed programming assignments targeting specific learning goals such as recursive thinking, dynamic memory management, and reasoning about augmented data structures.',
+        'Grade assignments and provide constructive feedback to help students improve algorithmic problem-solving and debugging of C-based implementations.',
+      ],
+    },
+    {
+      org: 'Downtown Diner Celebration',
+      role: 'Food Server',
+      dates: 'Jan 2024 – Present', loc: 'Celebration, FL',
+      bullets: [
+        'Directing tourists to desired areas to travel to in local vicinity.',
+        'Exceptional multitasking skills due to larger responsibility in restaurant.',
+        'Efficiently managing time between customer requests and job responsibilities.',
+      ],
+    },
+    {
+      org: 'Mindhome',
+      role: 'Software Engineer - Internship',
+      dates: 'Dec 2022 – Feb 2023', loc: 'Remote',
+      bullets: [
+        'Completed ROS2 training utilizing Python, building foundational skills in AI and robotics programming.',
+        'Contributed to backend development in Ruby, implementing API endpoints and assisting with database integration to support core platform functionality.',
+        'Participated in code reviews and collaborated with senior engineers to refine application logic and improve system reliability.',
+        'Developed a holistic understanding of software development methodologies including Agile workflows and version control practices.',
+      ],
+    },
+  ],
+  projects: [
+    {
+      name: 'Nudge',
+      stack: 'Next.js, TypeScript, tRPC, Zod, Supabase, MediaPipe, LiveKit, Tailwind CSS',
+      bullets: [
+        'Developing a student accountability platform that pairs college students for live video-call study sessions with real-time distraction tracking.',
+        'Integrated MediaPipe computer vision on the client side to detect off-screen gaze and phone usage during study sessions.',
+        'Designed backend architecture with Supabase for authentication (.edu email gating), Postgres database, and realtime session synchronization.',
+        'Implemented solo and duo session modes with structured timer workflows and AI-generated end-of-session productivity reports.',
+      ],
+    },
+    {
+      name: 'miniredis',
+      stack: 'C++, POSIX sockets, systems programming',
+      bullets: [
+        'Built a Redis-like in-memory key–value store from scratch using modern C++ and POSIX sockets.',
+        'Implemented event-driven TCP server with poll() capable of handling multiple concurrent client connections.',
+        'Developed RESP protocol serialization and core commands (SET, GET, PING, ECHO) with per-client buffering.',
+      ],
+    },
+  ],
+  skills: [
+    { label: 'Languages',       items: 'Python, Java, C/C++, Go, TypeScript, JavaScript, SQL' },
+    { label: 'Web',             items: 'Next.js, React, tRPC, Zod, Supabase, Postgres' },
+    { label: 'Libraries',       items: 'NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, Nixtla' },
+    { label: 'Developer Tools', items: 'Git, VS Code, Unix/Linux, AWS, PostgreSQL, Neovim' },
+  ],
+};
+
+const ResumeSection = ({ label, children }) => (
+  <section style={{ marginBottom: 28 }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
+    }}>
+      <span className="mono" style={{
+        fontSize: 11, color: '#1a1a1a', letterSpacing: 1.6,
+        textTransform: 'uppercase', fontWeight: 500,
+      }}>{label}</span>
+      <span style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.12)' }}/>
+    </div>
+    {children}
+  </section>
+);
+
+const ResumeRow = ({ left, right, sub, subRight, children }) => (
+  <div style={{ marginBottom: children ? 14 : 10 }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
+      <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1a1a1a' }}>{left}</span>
+      <span className="mono" style={{ fontSize: 11, color: '#5a5a55' }}>{right}</span>
+    </div>
+    {(sub || subRight) && (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginTop: 2 }}>
+        <span style={{ fontSize: 13, color: '#5a5a55', fontStyle: 'italic' }}>{sub}</span>
+        <span className="mono" style={{ fontSize: 11, color: '#5a5a55' }}>{subRight}</span>
+      </div>
+    )}
+    {children && (
+      <ul style={{
+        margin: '8px 0 0', padding: 0, listStyle: 'none',
+        display: 'flex', flexDirection: 'column', gap: 5,
+      }}>
+        {children.map((b, i) => (
+          <li key={i} style={{
+            fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty',
+            paddingLeft: 16, position: 'relative',
+          }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: '#8a8580' }}>·</span>
+            {b}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
+const ResumePage = ({ accent }) => {
+  return (
+    <M.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+      style={{ maxWidth: 820, margin: '0 auto', padding: '0 32px' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div>
+          <SectionLabel>resume · {new Date().getFullYear()}</SectionLabel>
+          <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: 0, lineHeight: 1.1, color: '#1a1a1a' }}>
+            Resume.
+          </h1>
+        </div>
+        <a
+          href="resume.pdf"
+          download="marcus-ruth-resume.pdf"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            height: 38, padding: '0 16px',
+            borderRadius: 999,
+            background: accent, color: '#062b1f',
+            fontWeight: 600, fontSize: 13, letterSpacing: -0.1,
+            boxShadow: `0 0 0 1px ${accent}, 0 4px 14px ${accent}55`,
+          }}
+        >
+          <Icon name="download" size={14} />
+          <span>Download PDF</span>
+        </a>
+      </div>
+
+      {/* Resume sheet */}
+      <article style={{
+        background: '#fbfaf6',
+        border: '1px solid rgba(0,0,0,0.08)',
+        borderRadius: 14,
+        padding: '40px 48px 44px',
+        boxShadow: '0 12px 40px rgba(10,10,10,0.06)',
+      }}>
+        {/* Header */}
+        <header style={{ textAlign: 'center', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+          <h2 style={{
+            fontSize: 32, fontWeight: 500, letterSpacing: -0.8,
+            margin: '0 0 8px', color: '#0a0a0a',
+          }}>{resumeData.name}</h2>
+          <div style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 14, justifyContent: 'center' }}>
+            {resumeData.links.map((l, i) => (
+              <React.Fragment key={l.href}>
+                {i > 0 && <span style={{ color: '#bdbab2' }}>·</span>}
+                <a href={l.href} target="_blank" rel="noopener"
+                   className="mono"
+                   style={{ fontSize: 12, color: '#3a3a36', borderBottom: `1px solid ${accent}66` }}>
+                  {l.label}
+                </a>
+              </React.Fragment>
+            ))}
+          </div>
+        </header>
+
+        <ResumeSection label="Education">
+          {resumeData.education.map(e => (
+            <ResumeRow
+              key={e.school}
+              left={e.school}
+              right={e.dates}
+              sub={e.degree}
+              subRight={e.loc}
+            />
+          ))}
+        </ResumeSection>
+
+        <ResumeSection label="Relevant Experience">
+          {resumeData.experience.map(x => (
+            <ResumeRow
+              key={x.org + x.role}
+              left={x.org}
+              right={x.dates}
+              sub={x.role}
+              subRight={x.loc}
+            >
+              {x.bullets}
+            </ResumeRow>
+          ))}
+        </ResumeSection>
+
+        <ResumeSection label="Projects">
+          {resumeData.projects.map(p => (
+            <div key={p.name} style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+                <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1a1a1a' }}>{p.name}</span>
+                <span style={{ color: '#bdbab2' }}>|</span>
+                <span className="mono" style={{ fontSize: 11.5, color: '#5a5a55', fontStyle: 'italic' }}>
+                  {p.stack}
+                </span>
+              </div>
+              <ul style={{ margin: '6px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {p.bullets.map((b, i) => (
+                  <li key={i} style={{
+                    fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty',
+                    paddingLeft: 16, position: 'relative',
+                  }}>
+                    <span style={{ position: 'absolute', left: 0, top: 0, color: '#8a8580' }}>·</span>
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </ResumeSection>
+
+        <ResumeSection label="Technical Skills">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {resumeData.skills.map(s => (
+              <div key={s.label} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: '#3a3a36', lineHeight: 1.55, textWrap: 'pretty' }}>
+                <span style={{ fontWeight: 600, color: '#1a1a1a', minWidth: 120 }}>{s.label}:</span>
+                <span>{s.items}</span>
+              </div>
+            ))}
+          </div>
+        </ResumeSection>
+
+        <div className="mono" style={{
+          marginTop: 28, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.06)',
+          fontSize: 10, color: '#8a8580', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+        }}>
+          <span>polter-dev · marcus ruth</span>
+          <span>last updated · {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+        </div>
+      </article>
+    </M.div>
+  );
+};
+
+
+const ChatPage = ({ accent }) =>
+<PagePlaceholder>
+    <SectionLabel>ask me · beta</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Under construction.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 28px', maxWidth: 480, textWrap: 'pretty' }}>
+      A LLM-powered chat trained on my background, so you can ask the questions you'd normally save for a call. Come back soon when it's ready.
+    </p>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '14px 16px',
+      background: '#fbfaf6',
+      border: '1px dashed rgba(0,0,0,0.15)',
+      borderRadius: 12,
+      maxWidth: 480,
+    }}>
+      <span style={{ width: 8, height: 8, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
+      <span className="mono" style={{ fontSize: 12, color: '#5a5a55' }}>status: wiring it up · coming soon</span>
+    </div>
+  </PagePlaceholder>;
+
+
+const DRAFT_KEY = 'polter_contact_draft';
+const loadDraft = () => {
+  try { return JSON.parse(window.localStorage.getItem(DRAFT_KEY)) || {}; } catch (e) { return {}; }
+};
+
+// Turn the rich-text editor's HTML into clean Markdown-ish text for the email body.
+const htmlToText = (html) => {
+  const el = document.createElement('div');
+  el.innerHTML = html || '';
+  const walk = (node, ctx) => {
+    let out = '';
+    node.childNodes.forEach((n) => {
+      if (n.nodeType === 3) { out += n.nodeValue; return; }
+      if (n.nodeType !== 1) return;
+      const tag = n.tagName.toLowerCase();
+      if (tag === 'b' || tag === 'strong') out += '**' + walk(n, ctx) + '**';
+      else if (tag === 'i' || tag === 'em') out += '*' + walk(n, ctx) + '*';
+      else if (tag === 's' || tag === 'strike' || tag === 'del') out += '~~' + walk(n, ctx) + '~~';
+      else if (tag === 'a') out += '[' + walk(n, ctx) + '](' + (n.getAttribute('href') || '') + ')';
+      else if (tag === 'br') out += '\n';
+      else if (tag === 'ul' || tag === 'ol') out += '\n' + walk(n, { ol: tag === 'ol', i: 0 });
+      else if (tag === 'li') {
+        const prefix = ctx && ctx.ol ? (++ctx.i) + '. ' : '- ';
+        out += prefix + walk(n, ctx).trim() + '\n';
+      }
+      else if (tag === 'div' || tag === 'p') out += '\n' + walk(n, ctx);
+      else out += walk(n, ctx);
+    });
+    return out;
+  };
+  return walk(el, null).replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+};
+
+// Formatting toolbar for the message editor. Its own component so the link
+// popover's state can update without re-rendering (and wiping) the editor.
+const Toolbar = ({ editorRef, sync }) => {
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [url, setUrl] = useState('');
+  const saved = useRef(null);
+
+  const saveSel = () => {
+    const sel = window.getSelection();
+    saved.current = (sel && sel.rangeCount && editorRef.current && editorRef.current.contains(sel.anchorNode))
+      ? sel.getRangeAt(0).cloneRange() : null;
+  };
+  const restoreSel = () => {
+    if (editorRef.current) editorRef.current.focus();
+    if (saved.current) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(saved.current);
+    }
+  };
+
+  const fmt = (cmd) => (e) => { e.preventDefault(); document.execCommand(cmd); sync(); };
+  const openLink = (e) => { e.preventDefault(); saveSel(); setUrl(''); setLinkOpen(true); };
+  const cancelLink = () => { setLinkOpen(false); setUrl(''); };
+  const applyLink = () => {
+    const raw = url.trim();
+    restoreSel();
+    if (raw) {
+      const href = /^(https?:|mailto:)/i.test(raw) ? raw : 'https://' + raw;
+      if (saved.current && saved.current.collapsed)
+        document.execCommand('insertHTML', false, '<a href="' + href + '">' + href + '</a>');
+      else
+        document.execCommand('createLink', false, href);
+    }
+    setLinkOpen(false); setUrl(''); sync();
+  };
+
+  return (
+    <React.Fragment>
+      <div className="fmt-bar" style={{
+        position: 'absolute', bottom: 8, right: 8, zIndex: 3,
+        display: 'inline-flex', alignItems: 'center', padding: '3px 4px',
+        background: '#33363a', borderRadius: 999,
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 4px 14px rgba(10,10,10,0.18), 0 1px 2px rgba(0,0,0,0.12)'
+      }}>
+        <span className="fmt-trigger" aria-hidden="true">Aa</span>
+        <div className="fmt-tools">
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Bold" title="Bold (Cmd/Ctrl+B)"
+            onMouseDown={fmt('bold')} style={{ fontWeight: 700 }}>B</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Italic" title="Italic (Cmd/Ctrl+I)"
+            onMouseDown={fmt('italic')} style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>I</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Underline" title="Underline (Cmd/Ctrl+U)"
+            onMouseDown={fmt('underline')} style={{ textDecoration: 'underline' }}>U</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Strikethrough" title="Strikethrough"
+            onMouseDown={fmt('strikeThrough')} style={{ textDecoration: 'line-through' }}>S</span>
+          <span className="fmt-sep" />
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Bulleted list" title="Bulleted list"
+            onMouseDown={fmt('insertUnorderedList')} style={{ fontSize: 16, lineHeight: 0 }}>•</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Numbered list" title="Numbered list"
+            onMouseDown={fmt('insertOrderedList')} style={{ fontSize: 10, fontWeight: 600 }}>1.</span>
+          <span className="fmt-sep" />
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Add link" title="Add link"
+            onMouseDown={openLink}><Icon name="external" size={12} /></span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Clear formatting" title="Clear formatting"
+            onMouseDown={fmt('removeFormat')} style={{ fontSize: 15 }}>×</span>
+        </div>
+      </div>
+      {linkOpen &&
+        <div className="link-pop" style={{
+          position: 'absolute', bottom: 46, right: 8, zIndex: 4,
+          display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 6px',
+          background: '#33363a', borderRadius: 12,
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 8px 24px rgba(10,10,10,0.25), 0 1px 2px rgba(0,0,0,0.15)'
+        }}>
+          <input autoFocus value={url} placeholder="Paste or type a link"
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyLink(); } else if (e.key === 'Escape') { e.preventDefault(); cancelLink(); } }}
+            style={{ width: 190, border: 'none', outline: 'none', background: 'rgba(255,255,255,0.08)', color: '#fff', fontFamily: 'Geist, sans-serif', fontSize: 13, borderRadius: 7, padding: '6px 9px' }} />
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Apply link" title="Apply"
+            onMouseDown={(e) => { e.preventDefault(); applyLink(); }}>✓</span>
+          <span className="fmt-btn" role="button" tabIndex={-1} aria-label="Cancel" title="Cancel"
+            onMouseDown={(e) => { e.preventDefault(); cancelLink(); }} style={{ fontSize: 15 }}>×</span>
+        </div>
+      }
+    </React.Fragment>
+  );
+};
+
+// contentEditable message field: Cmd/Ctrl+B/I/U, Tab indents, "* " and "1. " start lists.
+// Wrapped in React.memo (never re-renders after mount) so the parent's re-renders
+// on each keystroke don't reconcile away the text being typed.
+const MessageEditor = React.memo(({ setFocused, initialHTML, onChange, inputStyle }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current && initialHTML) ref.current.innerHTML = initialHTML;
+  }, []);
+
+  const sync = () => {
+    const el = ref.current;
+    if (!el) return;
+    // Reset to empty (so the CSS placeholder shows) only when there's no text AND
+    // no structural elements \u2014 otherwise a brand-new empty list/link gets wiped.
+    if (!el.innerText.replace(/\u00a0/g, '').trim() && !el.querySelector('ul, ol, li, a')) el.innerHTML = '';
+    onChange(el.innerHTML);
+  };
+
+  // Turn "* " / "- " / "1. " at the start of a line into a real list.
+  const autoList = () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return false;
+    const range = sel.getRangeAt(0);
+    if (!range.collapsed) return false;
+    let node = range.startContainer;
+    let offset = range.startOffset;
+    // If the caret sits at the element level, resolve to the preceding text node.
+    if (node.nodeType === 1) {
+      const child = node.childNodes[offset - 1];
+      if (child && child.nodeType === 3) { node = child; offset = child.textContent.length; }
+      else return false;
+    }
+    if (node.nodeType !== 3) return false;
+    const before = node.textContent.slice(0, offset);
+    const lead = !node.previousSibling || node.previousSibling.nodeName === 'BR';
+    if (!lead) return false;
+    const bullet = /^[*-]$/.test(before);
+    const number = /^\d+\.$/.test(before);
+    if (!bullet && !number) return false;
+    // Select the marker text and delete it via the real command so the browser's
+    // selection state stays valid for the list command that follows.
+    const del = document.createRange();
+    del.setStart(node, 0);
+    del.setEnd(node, offset);
+    sel.removeAllRanges();
+    sel.addRange(del);
+    document.execCommand('delete');
+    document.execCommand(bullet ? 'insertUnorderedList' : 'insertOrderedList');
+    // First line has no block wrapper, so the command above can no-op — detect
+    // that (caret not inside an <li>) and build the list node deterministically.
+    let anc = window.getSelection().anchorNode, inList = false;
+    while (anc && anc !== ref.current) { if (anc.nodeName === 'LI') { inList = true; break; } anc = anc.parentNode; }
+    if (!inList) {
+      const list = document.createElement(bullet ? 'ul' : 'ol');
+      const li = document.createElement('li');
+      li.appendChild(document.createElement('br'));
+      list.appendChild(li);
+      const r2 = sel.getRangeAt(0);
+      r2.insertNode(list);
+      const cr = document.createRange();
+      cr.setStart(li, 0); cr.collapse(true);
+      sel.removeAllRanges(); sel.addRange(cr);
+    }
+    return true;
+  };
+
+  const onKeyDown = (e) => {
+    const mod = e.metaKey || e.ctrlKey;
+    const k = e.key.toLowerCase();
+    if (mod && k === 'b') { e.preventDefault(); document.execCommand('bold'); sync(); }
+    else if (mod && k === 'i') { e.preventDefault(); document.execCommand('italic'); sync(); }
+    else if (mod && k === 'u') { e.preventDefault(); document.execCommand('underline'); sync(); }
+    else if (e.key === ' ') { if (autoList()) { e.preventDefault(); sync(); } }
+    else if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '\t'); sync(); }
+  };
+
+  return (
+    <div className="msg-wrap" style={{ position: 'relative', width: '100%' }}>
+      <div ref={ref} className="msg-editor" data-placeholder="A short note…"
+        contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true"
+        onInput={sync} onKeyDown={onKeyDown}
+        onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
+        style={{ ...inputStyle, width: '100%', minHeight: 220, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', tabSize: 4 }} />
+      <Toolbar editorRef={ref} sync={sync} />
+    </div>
+  );
+}, () => true);
+
+const ContactForm = ({ accent }) => {
+  const [values, setValues] = useState(() => {
+    const d = loadDraft();
+    return { name: d.name || '', email: d.email || '', confirmEmail: d.confirmEmail || '', message: d.message || '', signature: d.signature || '' };
+  });
+  const [errors, setErrors] = useState({});
+  const [focused, setFocused] = useState(null);
+  const [status, setStatus] = useState('idle'); // idle | sending | success | error
+
+  // persist a draft so an accidental refresh or leaving the page never wipes what's typed
+  useEffect(() => {
+    if (status === 'success') return;
+    try { window.localStorage.setItem(DRAFT_KEY, JSON.stringify(values)); } catch (e) {}
+  }, [values, status]);
+
+  const set = (k) => (e) => setValues((v) => ({ ...v, [k]: e.target.value }));
+
+  const validate = () => {
+    const next = {};
+    if (!values.name.trim()) next.name = 'required';
+    if (!values.email.trim()) next.email = 'required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) next.email = 'invalid email';
+    if (!values.confirmEmail.trim()) next.confirmEmail = 'confirm your email';
+    else if (values.email.trim().toLowerCase() !== values.confirmEmail.trim().toLowerCase()) next.confirmEmail = 'emails do not match';
+    if (!htmlToText(values.message).trim()) next.message = 'required';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (status === 'sending') return;
+    if (!validate()) return;
+    setStatus('sending');
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/contact@polter.sh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name: values.name.trim(),
+          email: values.email.trim(),
+          message: htmlToText(values.message),
+          signature: values.signature.trim() || '-',
+          _subject: 'New message from polter.sh contact form',
+          _template: 'table',
+          _captcha: 'false'
+        })
+      });
+      if (!res.ok) throw new Error('bad status');
+      setStatus('success');
+      try { window.localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    } catch (err) {
+      setStatus('error');
+    }
+  };
+
+  const cardStyle = {
+    maxWidth: 620, background: '#fbfaf6',
+    border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden'
+  };
+  const rowStyle = (name) => ({
+    display: 'flex', alignItems: 'flex-start', gap: 14,
+    padding: '13px 18px',
+    borderBottom: '1px solid rgba(0,0,0,0.06)',
+    background: focused === name ? '#f4f1ea' : 'transparent',
+    transition: 'background 0.15s ease'
+  });
+  const labelStyle = (name) => ({
+    fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase',
+    color: errors[name] ? '#b4432a' : focused === name ? accent : '#8a8580',
+    width: 88, flexShrink: 0, paddingTop: 4, transition: 'color 0.15s ease'
+  });
+  const inputStyle = {
+    flex: 1, minWidth: 0, border: 'none', background: 'transparent',
+    outline: 'none', fontFamily: 'Geist, sans-serif', fontSize: 14,
+    color: '#1a1a1a', padding: 0
+  };
+  const errTag = { fontSize: 10, color: '#b4432a', letterSpacing: 0.4, paddingTop: 5, flexShrink: 0, whiteSpace: 'nowrap', fontFamily: 'Geist Mono, monospace' };
+  const row = (name, opts) =>
+    <div style={rowStyle(name)}>
+      <span className="mono" style={labelStyle(name)}>{opts.label}</span>
+      <input type={opts.type || 'text'} value={values[name]} onChange={set(name)}
+        onFocus={() => setFocused(name)} onBlur={() => setFocused(null)}
+        onPaste={opts.onPaste} placeholder={opts.placeholder} style={inputStyle} />
+      {errors[name] && <span style={errTag}>{errors[name]}</span>}
+    </div>;
+
+  if (status === 'success')
+    return (
+      <M.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '22px 20px' }}>
+          <span style={{ width: 8, height: 8, marginTop: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 4px ${accent}22`, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 500, marginBottom: 3 }}>Message sent.</div>
+            <div style={{ fontSize: 13, color: '#5a5a55', lineHeight: 1.55 }}>Thanks for reaching out. I'll get back to you soon.</div>
+          </div>
+        </div>
+      </M.div>
+    );
+
+  return (
+    <form onSubmit={submit} noValidate style={cardStyle}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        padding: '14px 18px', background: '#f4f1ea', borderBottom: '1px solid rgba(0,0,0,0.07)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, color: '#1a1a1a' }}>
+          <Icon name="mail" size={14} />
+          <span style={{ fontSize: 13, fontWeight: 500 }}>New message</span>
+        </div>
+        <span className="mono" style={{ fontSize: 11, color: '#8a8580', letterSpacing: 0.4 }}>
+          to <span style={{ color: accent }}>contact@polter.sh</span>
+        </span>
+      </div>
+
+      {row('name', { label: 'name', placeholder: 'Your name' })}
+      {row('email', { label: 'email', type: 'email', placeholder: 'you@example.com' })}
+      {row('confirmEmail', { label: 'confirm', type: 'email', placeholder: 're-enter your email', onPaste: (e) => e.preventDefault() })}
+
+      <div style={{ ...rowStyle('message'), flexDirection: 'column', gap: 9 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+          <span className="mono" style={{ ...labelStyle('message'), width: 'auto', paddingTop: 0 }}>message</span>
+          {errors.message && <span style={{ ...errTag, paddingTop: 0 }}>{errors.message}</span>}
+        </div>
+        <MessageEditor setFocused={setFocused}
+          initialHTML={values.message} inputStyle={inputStyle}
+          onChange={(html) => setValues((v) => ({ ...v, message: html }))} />
+      </div>
+
+      <div style={rowStyle('signature')}>
+        <span className="mono" style={labelStyle('signature')}>signature</span>
+        <input type="text" value={values.signature} onChange={set('signature')}
+          onFocus={() => setFocused('signature')} onBlur={() => setFocused(null)}
+          placeholder="e.g. Jane, Recruiter @ Acme" style={inputStyle} />
+        <span className="mono" style={{ fontSize: 10, color: '#b0aca4', letterSpacing: 0.8, paddingTop: 5, flexShrink: 0 }}>optional</span>
+      </div>
+
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        padding: '14px 18px'
+      }}>
+        <span className="mono" style={{
+          fontSize: 12, color: '#b4432a', display: 'flex', alignItems: 'center', gap: 8,
+          opacity: status === 'error' ? 1 : 0, transition: 'opacity 0.15s ease'
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b4432a', flexShrink: 0 }} />
+          Something went wrong. Try again.
+        </span>
+        <button type="submit" disabled={status === 'sending'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            fontFamily: 'Geist, sans-serif', fontSize: 14, fontWeight: 500,
+            color: '#fff', background: accent,
+            border: 'none', borderRadius: 10, padding: '10px 18px',
+            cursor: status === 'sending' ? 'default' : 'pointer',
+            opacity: status === 'sending' ? 0.7 : 1,
+            transition: 'opacity 0.15s ease', flexShrink: 0
+          }}>
+          {status === 'sending' ? 'Sending…' : 'Send message'}
+          {status !== 'sending' && <Icon name="arrow-up-right" size={14} />}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const ContactPage = ({ accent, navigate }) => {
+  const [emailHover, setEmailHover] = useState(false);
+  const rows = [
+    ['email', 'contact@polter.sh', 'mail', null],
+    ['github', 'github.com/polter-dev', 'github', 'https://github.com/polter-dev'],
+    ['linkedin', 'linkedin.com/in/marcusruth', 'linkedin', 'https://www.linkedin.com/in/marcusruth/']
+  ];
+  return (
+  <PagePlaceholder>
+    <SectionLabel>contact · ↓</SectionLabel>
+    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 24px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      Send a short note.
+    </h1>
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: '#3a3a36', margin: '0 0 32px', maxWidth: 480 }}>I read everything. I reply to most. Email is the fastest path. I check it several times a day, so feel free to send one whenever.
+
+  </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(0,0,0,0.08)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)' }}>
+      {rows.map(([k, v, icon, href]) => {
+    const isEmail = k === 'email';
+    const inner = <React.Fragment>
+          <div style={{ color: isEmail && emailHover ? accent : '#8a8580', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
+          <span className="mono" style={{ fontSize: 11, color: '#8a8580', textTransform: 'uppercase', letterSpacing: 1.2, width: 64 }}>{k}</span>
+          {href ? (
+            <a href={href} target="_blank" rel="noopener noreferrer"
+               style={{ fontSize: 14, color: '#1a1a1a', fontFamily: 'Geist Mono, monospace', textDecoration: 'none' }}>
+              {v}
+            </a>
+          ) : (
+            <span style={{ fontSize: 14, color: '#1a1a1a', fontFamily: 'Geist Mono, monospace' }}>{v}</span>
+          )}
+          {isEmail &&
+            <span className="mono" style={{
+              marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: 10, textTransform: 'uppercase', letterSpacing: 1,
+              padding: '4px 10px', borderRadius: 999,
+              color: accent, background: `${accent}14`,
+              border: `1px solid ${accent}${emailHover ? '55' : '33'}`,
+              transition: 'border-color 0.15s ease'
+            }}>
+              compose<Icon name="message" size={11} />
+            </span>
+          }
+        </React.Fragment>;
+    if (isEmail)
+      return <div key={k} role="button" tabIndex={0}
+        onClick={() => navigate('/contact/compose')}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/contact/compose'); } }}
+        onMouseEnter={() => setEmailHover(true)} onMouseLeave={() => setEmailHover(false)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+          background: emailHover ? '#f6f4ee' : '#fbfaf6', cursor: 'pointer',
+          transition: 'background 0.15s ease'
+        }}>{inner}</div>;
+    return <div key={k} style={{
+      display: 'flex', alignItems: 'center', gap: 14,
+      padding: '14px 16px', background: '#fbfaf6'
+    }}>{inner}</div>;
+      })}
+    </div>
+    <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, color: '#8a8580', fontSize: 12 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 0 3px ${accent}33` }} />
+      <span className="mono">currently accepting summer 2027 internships</span>
+    </div>
+  </PagePlaceholder>);
+};
+
+
+const ComposePage = ({ accent, navigate }) => {
+  const [backHover, setBackHover] = useState(false);
+  return (
+  <PagePlaceholder>
+    <button
+      onClick={() => navigate('/contact')}
+      onMouseEnter={() => setBackHover(true)} onMouseLeave={() => setBackHover(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 26,
+        fontFamily: 'Geist Mono, monospace', fontSize: 12, letterSpacing: 0.4,
+        color: backHover ? accent : '#8a8580', background: 'transparent',
+        border: 'none', padding: 0, cursor: 'pointer', transition: 'color 0.15s ease'
+      }}>
+      <Icon name="arrow-left" size={13} />
+      back to contact
+    </button>
+    <ContactForm accent={accent} />
+  </PagePlaceholder>);
+};
+
+
+// ----- App shell -----
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#10B981",
+  "showName": true,
+  "alwaysShowTooltips": false,
+  "background": "#EDE8DD"
+}/*EDITMODE-END*/;
+
+const accentSwatches = ['#10B981', '#F97316', '#6366F1', '#EC4899', '#FACC15'];
+const bgSwatches = ['#F4F1EC', '#EDE8DD', '#F5F5F2', '#E8E4DA', '#FFFFFF'];
+
+function App() {
+  const [route, setRoute] = useState('/');
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  const [hint, setHint] = useState(true);
+  const [pillHover, setPillHover] = useState(false);
+
+  // sync background CSS var
+  useEffect(() => {
+    document.documentElement.style.setProperty('--color-bg', tweaks.background);
+    document.documentElement.style.setProperty('--color-accent', tweaks.accent);
+  }, [tweaks.background, tweaks.accent]);
+
+  // backdrop reacts to navigation: pulse + calmer on content pages
+  useEffect(() => {
+    if (window.AIBackdrop) {
+      window.AIBackdrop.pulse(1);
+      window.AIBackdrop.setIntensity(route === '/' ? 1 : 0.55);
+    }
+  }, [route]);
+
+  // hide hint after navigation
+  useEffect(() => {
+    if (route !== '/') setHint(false);
+  }, [route]);
+
+  // keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'a') {setRoute('/about');} else
+      if (k === 'p') {setRoute('/projects');} else
+      if (k === 's') {setRoute('/stack');} else
+      if (k === 'r') {setRoute('/resume');} else
+      if (k === 'k') {setRoute('/chat');} else
+      if (k === 'c') {setRoute('/contact');} else
+      if (k === 'h' || k === 'escape') {setRoute('/');} else
+      if (k === 'g') {
+        // simulate external nav
+        flashExternal('GitHub');
+        window.open('https://github.com/polter-dev', '_blank', 'noopener');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  const [flashMsg, setFlashMsg] = useState(null);
+  const flashExternal = (name) => {
+    setFlashMsg(`Opening ${name}…`);
+    setTimeout(() => setFlashMsg(null), 1400);
+  };
+
+  const handleNavigate = (item) => {
+    if (item.external) {
+      flashExternal(item.label || (item.id === 'resume' ? 'Resume PDF' : 'link'));
+      if (item.url) {
+        window.open(item.url, '_blank', 'noopener');
+      }
+      return;
+    }
+    setRoute(item.route);
+  };
+
+  const isLanding = route === '/';
+
+  return (
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden'
+    }}>
+      {/* Top metadata strip */}
+      <div style={{
+        position: 'fixed', top: 18, left: 22,
+        display: 'flex', alignItems: 'center', gap: 8,
+        zIndex: 5, fontFamily: 'Geist Mono, monospace',
+        fontSize: 11, color: '#8a8580', letterSpacing: 0.6
+      }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: tweaks.accent, boxShadow: `0 0 0 3px ${tweaks.accent}22` }} />
+        polter-dev
+      </div>
+      <div style={{
+        position: 'fixed', top: 18, right: 22,
+        fontFamily: 'Geist Mono, monospace',
+        fontSize: 11, color: '#8a8580', letterSpacing: 0.6, zIndex: 5
+      }}>
+        v0.4.2 - orlando, fl
+      </div>
+
+      {/* Pill — anchored differently on landing vs inner */}
+      <LG>
+        <M.div
+          key="pill-anchor"
+          layout
+          transition={{ type: 'spring', stiffness: 280, damping: 32 }}
+          style={{
+            position: 'fixed',
+            left: 0, right: 0,
+            top: isLanding ? '50%' : 28,
+            transform: isLanding ? 'translateY(-50%)' : 'none',
+            display: 'flex',
+            justifyContent: 'center',
+            zIndex: 20,
+            pointerEvents: 'none'
+          }}>
+          
+          <M.div
+            key="pill-inner"
+            initial={isLanding ? { opacity: 0, y: 20, scale: 0.95 } : false}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            style={{ pointerEvents: 'auto' }}
+            onMouseEnter={() => isLanding && setPillHover(true)}
+            onMouseLeave={() => setPillHover(false)}>
+            
+            <Pill route={route} onNavigate={handleNavigate} accent={tweaks.accent} showName={tweaks.showName} forceCompact={isLanding && !pillHover} tiny={isLanding && !pillHover} />
+          </M.div>
+        </M.div>
+      </LG>
+
+      {/* Inner page content */}
+      <AP mode="popLayout">
+        {!isLanding &&
+        <M.div
+          key={route}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          style={{
+            position: 'absolute',
+            top: 130, left: 0, right: 0, bottom: 0,
+            padding: '40px 0 40px',
+            overflowY: 'auto',
+            zIndex: 2
+          }}>
+          
+            {route === '/about' && <AboutPage />}
+            {route === '/projects' && <ProjectsPage accent={tweaks.accent} />}
+            {route === '/stack' && <StackPage accent={tweaks.accent} />}
+            {route === '/chat' && <ChatPage accent={tweaks.accent} />}
+            {route === '/resume' && <ResumePage accent={tweaks.accent} />}
+            {route === '/contact' && <ContactPage accent={tweaks.accent} navigate={setRoute} />}
+            {route === '/contact/compose' && <ComposePage accent={tweaks.accent} navigate={setRoute} />}
+
+            {/* back hint */}
+            <div style={{ maxWidth: 640, margin: '40px auto 0', padding: '0 32px' }}>
+              <button
+              onClick={() => setRoute('/')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                fontSize: 12, color: '#8a8580',
+                fontFamily: 'Geist Mono, monospace'
+              }}>
+              
+                <Icon name="arrow-left" size={12} />
+                back home <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#8a8580', borderColor: 'rgba(0,0,0,0.08)' }}>esc</span>
+              </button>
+            </div>
+          </M.div>
+        }
+      </AP>
+
+      {/* Ambient keyboard hint */}
+      <AP>
+        {(isLanding && hint) &&
+        <M.div
+          key="kbd-hint"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, delay: isLanding ? 1.0 : 0.3 }}
+          exit={{ opacity: 0, y: -4, transition: { duration: 0.18, ease: 'easeOut' } }}
+          style={{
+            position: 'fixed',
+            left: '50%',
+            bottom: isLanding ? 'auto' : 28,
+            top: isLanding ? 'calc(50% + 90px)' : 'auto',
+            transform: 'translateX(-50%)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontFamily: 'Geist Mono, monospace',
+            fontSize: 11, color: '#8a8580',
+            zIndex: 5,
+            padding: isLanding ? 0 : '8px 14px',
+            background: isLanding ? 'transparent' : 'rgba(251,250,246,0.85)',
+            backdropFilter: isLanding ? 'none' : 'blur(8px)',
+            border: isLanding ? 'none' : '1px solid rgba(0,0,0,0.06)',
+            borderRadius: 999,
+          }}>
+          
+            <span>navigate</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>A</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>P</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>S</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>K</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>R</span>
+            <span className="kbd" style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5a55', borderColor: 'rgba(0,0,0,0.08)' }}>C</span>
+            <span>· esc to home · or click the pill</span>
+          </M.div>
+        }
+      </AP>
+
+      {/* External link toast */}
+      <AP>
+        {flashMsg &&
+        <M.div
+          initial={{ opacity: 0, y: 20, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.96 }}
+          transition={{ duration: 0.25 }}
+          style={{
+            position: 'fixed', bottom: 32, left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '10px 16px',
+            background: '#0a0a0a', color: 'white',
+            borderRadius: 999, fontSize: 12,
+            fontFamily: 'Geist Mono, monospace',
+            boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            zIndex: 50
+          }}>
+          
+            <Icon name="external" size={12} />
+            {flashMsg}
+          </M.div>
+        }
+      </AP>
+
+      {/* Tweaks panel */}
+      <window.TweaksPanel title="Tweaks">
+        <window.TweakSection title="Palette">
+          <window.TweakColor
+            label="Accent"
+            value={tweaks.accent}
+            options={accentSwatches}
+            onChange={(v) => setTweak('accent', v)} />
+          
+          <window.TweakColor
+            label="Background"
+            value={tweaks.background}
+            options={bgSwatches}
+            onChange={(v) => setTweak('background', v)} />
+          
+        </window.TweakSection>
+        <window.TweakSection title="Pill">
+          <window.TweakToggle
+            label="Show 'Hello, I'm' label"
+            value={tweaks.showName}
+            onChange={(v) => setTweak('showName', v)} />
+          
+        </window.TweakSection>
+        <window.TweakSection title="Navigation">
+          <window.TweakButton onClick={() => setRoute('/')}>→ Home</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/about')}>→ About</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/projects')}>→ Projects</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/stack')}>→ Stack</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/chat')}>→ Ask Me</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/resume')}>→ Resume</window.TweakButton>
+          <window.TweakButton onClick={() => setRoute('/contact')}>→ Contact</window.TweakButton>
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </div>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<script>
+(function () {
+  var KEY = 'ai_backdrop_variant';
+  var saved = 'nodes';
+  try { saved = window.localStorage.getItem(KEY) || 'nodes'; } catch (e) {}
+  function apply(name) {
+    if (name === 'off') { AIBackdrop.destroy(); }
+    else { AIBackdrop.set(name); }
+    try { window.localStorage.setItem(KEY, name); } catch (e) {}
+    Array.prototype.forEach.call(bar.querySelectorAll('button'), function (b) {
+      var on = b.dataset.v === name;
+      b.style.background = on ? 'var(--color-accent)' : 'transparent';
+      b.style.color = on ? '#062b1f' : 'rgba(255,255,255,0.65)';
+      b.style.fontWeight = on ? '600' : '400';
+    });
+  }
+  var bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:24px;left:22px;z-index:40;display:flex;align-items:center;gap:2px;padding:4px;background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);border-radius:999px;box-shadow:0 4px 16px rgba(10,10,10,0.18);font-family:\'Geist Mono\',monospace;font-size:11px;';
+  var label = document.createElement('span');
+  label.textContent = 'backdrop';
+  label.style.cssText = 'color:rgba(255,255,255,0.4);letter-spacing:0.8px;text-transform:uppercase;font-size:9px;padding:0 8px 0 10px;';
+  bar.appendChild(label);
+  ['off', 'nodes', 'flow', 'aurora'].forEach(function (v) {
+    var b = document.createElement('button');
+    b.dataset.v = v;
+    b.textContent = v;
+    b.style.cssText = 'font-family:inherit;font-size:11px;letter-spacing:0.3px;padding:5px 11px;border-radius:999px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;transition:background 0.15s,color 0.15s;';
+    b.addEventListener('click', function () { apply(v); });
+    bar.appendChild(b);
+  });
+  document.body.appendChild(bar);
+  apply(saved);
+  // subtle backdrop pulse when hovering interactive elements
+  var lastPulse = 0;
+  document.addEventListener('pointerover', function (e) {
+    if (!window.AIBackdrop || !e.target || !e.target.closest) return;
+    if (e.target.closest('button, a, [role="button"], li[style*="cursor"]')) {
+      var now = Date.now();
+      if (now - lastPulse > 300) { lastPulse = now; AIBackdrop.pulse(0.35); }
+    }
+  }, true);
+})();
+</script>
+</body>
+</html>
