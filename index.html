@@ -189,7 +189,7 @@
 
 
 const { useState, useEffect, useRef, useMemo } = React;
-const { motion, AnimatePresence, LayoutGroup } = window.Motion || window.FramerMotion || {};
+const { motion, AnimatePresence, LayoutGroup, useReducedMotion } = window.Motion || window.FramerMotion || {};
 
 // fallback if framer-motion didn't load under Motion namespace
 const M = window.Motion && window.Motion.motion || window.FramerMotion && window.FramerMotion.motion;
@@ -546,73 +546,216 @@ const AboutPage = () =>
 
 
 const projects = [
-{ year: '2026', name: 'Terminal Presence', url: 'https://github.com/polter-dev/discord_terminal_presence', live: 'https://termp.polter.sh/', desc: "A command-line tool that shows friends on Discord what you're doing in the terminal, the same idea as the little “Playing...” status Discord shows for games, but for tools like Neovim, tmux, or Claude Code. It automatically detects which of 48 built-in CLI tools you're using, displays a running timer and the tool's logo, and lets you control exactly what's shown (like hiding your folder name) for privacy. Ships as a single Go binary, no bot, no token, nothing leaves your machine.", tags: ['Go', 'Discord Rich Presence', 'CLI', 'systems'] },
-{ year: '2026', name: 'CapChecker', url: 'https://github.com/azizu06/CapChecker', desc: "Built for the BloomKnights 2026 12-hour hackathon. Turns a short-form financial video into a source-backed claim scorecard: a streamed pipeline extracts claims with the Gemini API, grounds them against Google Search and live Finnhub market data via function calling, and emits a deterministic 0–100 “Cap Score” with per-claim evidence tiered by citation strength (primary, high, medium, low). Also ships a searchable, category-filtered feed of vetted YouTube videos that auto-refreshes new candidates behind reliability gating, backed by idempotent, safe-failing Supabase writes. Next.js + TypeScript, tested with Vitest and Playwright against credential-free fixtures, deployed on Vercel.", tags: ['Next.js', 'TypeScript', 'Gemini API', 'Supabase', 'Finnhub', 'Playwright'] },
+{ year: '2026', name: 'Terminal Presence', url: 'https://github.com/polter-dev/discord_terminal_presence', live: 'https://termp.polter.sh/', workingOn: true, featured: true, desc: "A command-line tool that shows friends on Discord what you're doing in the terminal, the same idea as the little “Playing...” status Discord shows for games, but for tools like Neovim, tmux, or Claude Code. It automatically detects which of 48 built-in CLI tools you're using, displays a running timer and the tool's logo, and lets you control exactly what's shown (like hiding your folder name) for privacy. Ships as a single Go binary, no bot, no token, nothing leaves your machine.", tags: ['Go', 'Discord Rich Presence', 'CLI', 'systems'] },
+{ year: '2026', name: 'CapChecker', url: 'https://github.com/azizu06/CapChecker', featured: true, desc: "Built for the BloomKnights 2026 12-hour hackathon. Turns a short-form financial video into a source-backed claim scorecard: a streamed pipeline extracts claims with the Gemini API, grounds them against Google Search and live Finnhub market data via function calling, and emits a deterministic 0–100 “Cap Score” with per-claim evidence tiered by citation strength (primary, high, medium, low). Also ships a searchable, category-filtered feed of vetted YouTube videos that auto-refreshes new candidates behind reliability gating, backed by idempotent, safe-failing Supabase writes. Next.js + TypeScript, tested with Vitest and Playwright against credential-free fixtures, deployed on Vercel.", tags: ['Next.js', 'TypeScript', 'Gemini API', 'Supabase', 'Finnhub', 'Playwright'] },
+{ year: '2026', name: 'This Website', internal: '/recursion', live: 'https://polter.sh/', workingOn: true, desc: "The portfolio you're browsing, built as a single-file React site with tactile motion, careful details, and no build pipeline between an idea and the page.", tags: ['React', 'Framer Motion', 'no build step'] },
 { year: '2026', name: 'ScentStack', url: 'https://github.com/polter-dev/Fragrance-Searcher', desc: "Local-first fragrance deal aggregator for macOS. A Playwright crawler scrapes gray-market retailers on a schedule into SQLite, then normalizes and fuzzy-matches listings across sites to surface the best deals by effective $/mL after coupons and shipping. Features a cart optimizer that computes the cheapest per-site allocation given shipping thresholds and promo rules, price-drop detection vs each listing's trailing 30-day average, and a watchlist with target prices. FastAPI + SQLAlchemy backend with an APScheduler crawl every 12h, launchd job for background crawling, and a React + Vite + TypeScript frontend.", tags: ['Python', 'FastAPI', 'Playwright', 'SQLite', 'React', 'TypeScript'] },
 { year: '2026', name: 'Course Scrapper', url: 'https://github.com/polter-dev/course-watcher', desc: "Polls Valencia College's Banner Self-Service API and sends Discord notifications when seats open in full course sections. Reverse-engineered the undocumented JSON endpoints and session flow, including a chk_open_only parameter that acts as an inverter and is cached per session \u2014 requiring two parallel HTTP sessions to fetch the full section list. Hardened with atomic state writes, file-locking against duplicate instances, and exponential backoff with jitter. Deployed 24/7 via macOS launchd with auto-restart on crash.", tags: ['Python', 'Banner SSB', 'Discord webhooks', 'launchd', 'systems'] },
 { year: '2026', name: 'Nudge', url: 'https://github.com/polter-dev/Nudge', desc: 'Student accountability platform built on the T3 stack (Next.js, TypeScript, tRPC, Supabase) with a six-person team. Owned the backend: built the auth router with Zod-validated .edu email signup, protectedProcedure middleware against Supabase Auth, and orphaned-user rollback on failed profile inserts. Designed and shipped the full Postgres schema from ERD.', tags: ['TypeScript', 'tRPC', 'Supabase', 'Next.js', 'Zod'] },
 { year: '2025', name: 'Miniredis CPP', url: 'https://github.com/polter-dev/miniredis_cpp', desc: 'Redis-like in-memory key-value store written from scratch in C++. TCP server on POSIX sockets with a poll()-based event loop, RESP3 protocol parsing with per-client read buffers for partial reads, and a custom chained hash table with incremental rehashing to avoid resize latency spikes. Supports GET, SET, PING, ECHO.', tags: ['C++', 'POSIX sockets', 'RESP3', 'systems'] }];
 
 
-const ProjectsPage = ({ accent }) =>
-<PagePlaceholder>
-    <SectionLabel>projects · {projects.length} shipped</SectionLabel>
-    <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 32px', lineHeight: 1.1, color: 'var(--ink)' }}>
-      Things I've put into the world.
-    </h1>
-    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
-      {[...projects].sort((a, b) => b.year - a.year).map((p, i) =>
-    <M.li
-      key={p.name}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.25 + i * 0.06, duration: 0.4 }}
-      whileHover={{ x: 4 }}
-      onClick={() => window.open(p.url, '_blank', 'noopener')}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '54px 1fr auto',
-        alignItems: 'start',
-        gap: 20,
-        padding: '22px 0',
-        borderTop: '1px solid var(--line)',
-        cursor: 'pointer'
-      }}>
-      
-          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-faint)', paddingTop: 4 }}>{p.year}</span>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--ink)', marginBottom: 6 }}>{p.name}</div>
-            <div style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {p.live &&
-          <span
-            className="mono live-badge"
-            onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
+const projectTabs = ['working on', 'featured', 'everything'];
+
+const ProjectsPage = ({ accent, navigate }) => {
+  const [activeTab, setActiveTab] = useState('featured');
+  const reduceMotion = useReducedMotion();
+  const activeIndex = projectTabs.indexOf(activeTab);
+  const wheelOrder = [
+    projectTabs[(activeIndex + projectTabs.length - 1) % projectTabs.length],
+    activeTab,
+    projectTabs[(activeIndex + 1) % projectTabs.length]
+  ];
+  const filteredProjects = [...projects]
+    .filter((project) =>
+      activeTab === 'everything' ||
+      (activeTab === 'working on' ? project.workingOn : project.featured)
+    )
+    .sort((a, b) => b.year - a.year);
+
+  return (
+    <PagePlaceholder>
+      <SectionLabel>projects · {filteredProjects.length} shipped</SectionLabel>
+      <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 22px', lineHeight: 1.1, color: 'var(--ink)' }}>
+        Things I've put into the world.
+      </h1>
+      <LG>
+        <div
+          role="tablist"
+          aria-label="Filter projects"
+          style={{
+            width: 'min(100%, 344px)', margin: '0 auto 22px',
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+            alignItems: 'center', gap: 2,
+            perspective: '820px', transformStyle: 'preserve-3d'
+          }}>
+          {wheelOrder.map((tab, position) => {
+            const active = tab === activeTab;
+            const side = position === 0 ? -1 : position === 2 ? 1 : 0;
+            return (
+              <M.button
+                layout
+                key={tab}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(tab)}
+                animate={{
+                  opacity: active ? 1 : 0.42,
+                  scale: active ? 1 : 0.9,
+                  rotateY: reduceMotion ? 0 : side * -42,
+                  z: reduceMotion ? 0 : active ? 0 : -48,
+                  letterSpacing: active ? 0.15 : 0.05
+                }}
+                transition={{
+                  duration: reduceMotion ? 0.01 : 0.56,
+                  ease: [0.22, 1, 0.36, 1],
+                  layout: { duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }
+                }}
+                style={{
+                  position: 'relative', justifySelf: 'stretch',
+                  padding: '8px 3px 10px',
+                  fontFamily: 'Geist Mono, monospace',
+                  fontSize: 12.5,
+                  fontWeight: active ? 700 : 400,
+                  color: 'var(--ink)',
+                  whiteSpace: 'nowrap',
+                  transformStyle: 'preserve-3d',
+                  transformOrigin: '50% 50%'
+                }}>
+                {tab}
+                {active &&
+                  <M.span
+                    layoutId="project-tab-marker"
+                    transition={{ duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }}
+                    style={{
+                      position: 'absolute', left: '50%', bottom: 3,
+                      width: 18, height: 1.5, borderRadius: 999,
+                      background: accent, transform: 'translateX(-50%)'
+                    }}
+                  />
+                }
+              </M.button>
+            );
+          })}
+        </div>
+      </LG>
+      <M.ul layout style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
+        <AP mode="popLayout" initial={true}>
+          {filteredProjects.map((p, i) =>
+          <M.li
+            layout
+            key={p.name}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6, transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } }}
+            transition={{
+              layout: { duration: reduceMotion ? 0.01 : 0.4, ease: [0.22, 1, 0.36, 1] },
+              opacity: { duration: reduceMotion ? 0.01 : 0.34, delay: reduceMotion ? 0 : i * 0.03, ease: [0.22, 1, 0.36, 1] },
+              y: { duration: reduceMotion ? 0.01 : 0.38, delay: reduceMotion ? 0 : i * 0.03, ease: [0.22, 1, 0.36, 1] }
+            }}
+            whileHover={reduceMotion ? undefined : { x: 4 }}
+            onClick={() => p.internal ? navigate(p.internal) : window.open(p.url, '_blank', 'noopener')}
             style={{
-              fontSize: 10, padding: '2px 7px', borderRadius: 4,
-              background: 'var(--live-bg)', color: 'var(--live-fg)',
-              display: 'inline-flex', alignItems: 'center', gap: 4,
+              display: 'grid',
+              gridTemplateColumns: '54px 1fr auto',
+              alignItems: 'start',
+              gap: 20,
+              padding: '22px 0',
+              borderTop: '1px solid var(--line)',
               cursor: 'pointer'
             }}>
-            <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--live-fg)' }}/>
-            live
-          </span>
-          }
-            {p.tags.map((t) =>
-          <span key={t} className="mono" style={{
-            fontSize: 10, padding: '2px 7px', borderRadius: 4,
-            background: 'var(--chip)', color: 'var(--ink-soft)'
-          }}>{t}</span>
+
+              <span className="mono" style={{ fontSize: 11.25, fontWeight: 500, color: 'var(--ink-soft)', paddingTop: 4 }}>{p.year}</span>
+              <div>
+                <div style={{ fontSize: 16.5, fontWeight: 550, color: 'var(--ink)', marginBottom: 6 }}>{p.name}</div>
+                <div style={{ fontSize: 13.25, fontWeight: 425, color: 'var(--ink-body)', lineHeight: 1.55, marginBottom: 10, textWrap: 'pretty' }}>{p.desc}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {p.live &&
+              <span
+                className="mono live-badge"
+                onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
+                style={{
+                  fontSize: 10, padding: '2px 7px', borderRadius: 4,
+                  background: 'var(--live-bg)', color: 'var(--live-fg)',
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  cursor: 'pointer'
+                }}>
+                <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--live-fg)' }}/>
+                live
+              </span>
+              }
+                {p.tags.map((t) =>
+              <span key={t} className="mono" style={{
+                fontSize: 10, padding: '2px 7px', borderRadius: 4,
+                background: 'var(--chip)', color: 'var(--ink-soft)'
+              }}>{t}</span>
+              )}
+                </div>
+              </div>
+              <div style={{ color: accent, opacity: 0.7, paddingTop: 4 }}>
+                <Icon name="arrow-up-right" size={14} />
+              </div>
+            </M.li>
           )}
-            </div>
-          </div>
-          <div style={{ color: accent, opacity: 0.7, paddingTop: 4 }}>
-            <Icon name="arrow-up-right" size={14} />
-          </div>
-        </M.li>
-    )}
-    </ul>
-  </PagePlaceholder>;
+        </AP>
+      </M.ul>
+    </PagePlaceholder>
+  );
+};
+
+
+const RecursionPage = ({ navigate }) => {
+  const [depth, setDepth] = useState(0);
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <PagePlaceholder>
+      <SectionLabel>project · this website</SectionLabel>
+      <M.div
+        key={depth}
+        initial={reduceMotion ? false : { opacity: 0.72, scale: 0.992 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.32, ease: [0.22, 1, 0.36, 1] }}>
+        <h1 style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1.2, margin: '0 0 16px', lineHeight: 1.05, color: 'var(--ink)' }}>
+          What is Recursion?
+        </h1>
+        <p className="mono" style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--ink-soft)', margin: '0 0 24px' }}>
+          tl;dr · A function that calls itself and stops at some point.
+        </p>
+        <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--ink-body)', margin: '0 0 28px', maxWidth: 560, textWrap: 'pretty' }}>
+          In practice, it's a function that calls itself, panics a little, and stops right before your computer does. You're standing inside one right now. This is a project in my portfolio, and the project is my portfolio. The button that says go home is the base case. The one that says recurse is not.
+        </p>
+      </M.div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28, flexWrap: 'wrap' }}>
+        <M.button
+          onClick={() => setDepth((currentDepth) => currentDepth + 1)}
+          whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+          style={{
+            padding: '8px 0', fontSize: 14, fontWeight: 600,
+            color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: 7
+          }}>
+          ↻ recurse
+        </M.button>
+        <M.span
+          key={`depth-${depth}`}
+          aria-live="polite"
+          initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.25 }}
+          className="mono"
+          style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: 0.35 }}>
+          stack depth: {depth}
+        </M.span>
+      </div>
+      <button
+        onClick={() => navigate('/')}
+        className="mono"
+        style={{ padding: '6px 0', fontSize: 12, color: 'var(--ink-faint)' }}>
+        ← go back home
+      </button>
+    </PagePlaceholder>
+  );
+};
 
 
 const stackGroups = [
@@ -1563,7 +1706,8 @@ function App() {
           }}>
           
             {route === '/about' && <AboutPage />}
-            {route === '/projects' && <ProjectsPage accent={tweaks.accent} />}
+            {route === '/projects' && <ProjectsPage accent={tweaks.accent} navigate={setRoute} />}
+            {route === '/recursion' && <RecursionPage navigate={setRoute} />}
             {route === '/stack' && <StackPage accent={tweaks.accent} />}
             {route === '/chat' && <ChatPage accent={tweaks.accent} />}
             {route === '/resume' && <ResumePage accent={tweaks.accent} />}
@@ -1571,7 +1715,7 @@ function App() {
             {route === '/contact/compose' && <ComposePage accent={tweaks.accent} navigate={setRoute} />}
 
             {/* back hint */}
-            <div style={{ maxWidth: 640, margin: '40px auto 0', padding: '0 32px' }}>
+            {route !== '/recursion' && <div style={{ maxWidth: 640, margin: '40px auto 0', padding: '0 32px' }}>
               <button
               onClick={() => setRoute('/')}
               style={{
@@ -1583,7 +1727,7 @@ function App() {
                 <Icon name="arrow-left" size={12} />
                 back home <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-faint)', borderColor: 'var(--line)' }}>esc</span>
               </button>
-            </div>
+            </div>}
           </M.div>
         }
       </AP>
