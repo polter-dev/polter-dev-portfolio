@@ -592,37 +592,79 @@ const ProjectsPage = ({ accent, navigate }) => {
           {wheelOrder.map((tab, position) => {
             const active = tab === activeTab;
             const side = position === 0 ? -1 : position === 2 ? 1 : 0;
+            const characters = Array.from(tab);
+            const characterCenter = (characters.length - 1) / 2;
+            const characterStep = 5.5;
+            const cylinderRadius = 94;
+            const flatCharacterStep = 9;
             return (
-              <M.button
-                layout
+              <button
                 key={tab}
                 role="tab"
                 aria-selected={active}
+                aria-label={tab}
                 onClick={() => setActiveTab(tab)}
-                animate={{
-                  opacity: active ? 1 : 0.42,
-                  scale: active ? 1 : 0.9,
-                  rotateY: reduceMotion ? 0 : side * -42,
-                  z: reduceMotion ? 0 : active ? 0 : -48,
-                  letterSpacing: active ? 0.15 : 0.05
-                }}
-                transition={{
-                  duration: reduceMotion ? 0.01 : 0.56,
-                  ease: [0.22, 1, 0.36, 1],
-                  layout: { duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }
-                }}
                 style={{
                   position: 'relative', justifySelf: 'stretch',
                   padding: '8px 3px 10px',
                   fontFamily: 'Geist Mono, monospace',
                   fontSize: 12.5,
-                  fontWeight: active ? 700 : 400,
                   color: 'var(--ink)',
                   whiteSpace: 'nowrap',
-                  transformStyle: 'preserve-3d',
-                  transformOrigin: '50% 50%'
+                  cursor: 'pointer'
                 }}>
-                {tab}
+                <M.span
+                  layout
+                  animate={{
+                    opacity: active ? 1 : 0.42,
+                    scale: reduceMotion ? 1 : active ? 1 : 0.9,
+                    rotateY: reduceMotion ? 0 : side * -42,
+                    z: reduceMotion ? 0 : active ? 0 : -48
+                  }}
+                  transition={{
+                    duration: reduceMotion ? 0.01 : 0.56,
+                    ease: [0.22, 1, 0.36, 1],
+                    layout: { duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }
+                  }}
+                  style={{
+                    display: 'block',
+                    position: 'relative',
+                    height: '1.2em',
+                    fontWeight: active ? 700 : 400,
+                    pointerEvents: 'none',
+                    transformStyle: 'preserve-3d',
+                    transformOrigin: '50% 50%'
+                  }}>
+                  {characters.map((character, characterIndex) => {
+                    const characterOffset = characterIndex - characterCenter;
+                    const characterAngle = characterStep * characterOffset;
+                    return (
+                      <M.span
+                        key={`${tab}-${characterIndex}`}
+                        aria-hidden="true"
+                        animate={{
+                          transform: reduceMotion
+                            ? `translateX(${characterOffset * flatCharacterStep}px)`
+                            : `rotateY(${characterAngle}deg) translateZ(${cylinderRadius}px)`
+                        }}
+                        transition={{ duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }}
+                        style={{
+                          position: 'absolute',
+                          left: '50%',
+                          top: 0,
+                          width: '1ch',
+                          marginLeft: '-0.5ch',
+                          textAlign: 'center',
+                          whiteSpace: 'pre',
+                          pointerEvents: 'none',
+                          transformStyle: 'preserve-3d',
+                          transformOrigin: '50% 50%'
+                        }}>
+                        {character === ' ' ? '\u00a0' : character}
+                      </M.span>
+                    );
+                  })}
+                </M.span>
                 {active &&
                   <M.span
                     layoutId="project-tab-marker"
@@ -630,11 +672,12 @@ const ProjectsPage = ({ accent, navigate }) => {
                     style={{
                       position: 'absolute', left: '50%', bottom: 3,
                       width: 18, height: 1.5, borderRadius: 999,
-                      background: accent, transform: 'translateX(-50%)'
+                      background: accent, transform: 'translateX(-50%)',
+                      pointerEvents: 'none'
                     }}
                   />
                 }
-              </M.button>
+              </button>
             );
           })}
         </div>
