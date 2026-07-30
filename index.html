@@ -572,7 +572,7 @@ const ProjectDescription = ({ desc, id, color, expanded, truncated, onTruncatedC
     <div style={{ marginBottom: 8 }}>
       <M.div
         initial={false}
-        animate={{ height: expanded ? 'auto' : truncated ? 39 : 'auto' }}
+        animate={{ height: expanded ? 'auto' : truncated ? 42 : 'auto' }}
         transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
         style={{ overflow: 'hidden' }}>
         <div
@@ -584,10 +584,10 @@ const ProjectDescription = ({ desc, id, color, expanded, truncated, onTruncatedC
             WebkitLineClamp: expanded ? undefined : 2,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            fontSize: 13,
+            fontSize: 13.5,
             fontWeight: 425,
             color,
-            lineHeight: 1.5
+            lineHeight: 1.55
           }}>
           {desc}
         </div>
@@ -621,14 +621,30 @@ const ProjectRow = ({ p, i, accent, navigate, reduceMotion }) => {
         gridTemplateColumns: '54px 1fr auto',
         alignItems: 'start',
         gap: 20,
-        padding: '16px 0',
+        padding: '18px 0',
         borderTop: '1px solid var(--line)',
         cursor: truncated ? 'pointer' : 'default'
       }}>
 
-      <span className="mono" style={{ fontSize: 11, fontWeight: 500, color: 'var(--ink-faint)', paddingTop: 3 }}>{p.year}</span>
+      <span className="mono" style={{ fontSize: 11, fontWeight: 500, color: 'var(--ink-faint)', paddingTop: 4 }}>{p.year}</span>
       <div>
-        <div style={{ fontSize: 16, fontWeight: 550, color: 'var(--ink)', marginBottom: 4 }}>{p.name}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 5 }}>
+          <span style={{ fontSize: 16, fontWeight: 550, color: 'var(--ink)' }}>{p.name}</span>
+          {p.live &&
+            <span
+              className="mono live-badge"
+              onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
+              style={{
+                fontSize: 10, padding: '2px 7px', borderRadius: 4,
+                background: 'var(--live-bg)', color: 'var(--live-fg)',
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                cursor: 'pointer'
+              }}>
+              <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--live-fg)' }}/>
+              live
+            </span>
+          }
+        </div>
         <ProjectDescription
           desc={p.desc}
           id={descriptionId}
@@ -637,32 +653,44 @@ const ProjectRow = ({ p, i, accent, navigate, reduceMotion }) => {
           truncated={truncated}
           onTruncatedChange={setTruncated}
         />
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {p.live &&
-      <span
-        className="mono live-badge"
-        onClick={(e) => { e.stopPropagation(); window.open(p.live, '_blank', 'noopener'); }}
-        style={{
-          fontSize: 10, padding: '2px 7px', borderRadius: 4,
-          background: 'var(--live-bg)', color: 'var(--live-fg)',
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          cursor: 'pointer'
-        }}>
-        <span className="live-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--live-fg)' }}/>
-        live
-      </span>
-      }
-        {p.tags.map((t) =>
-      <span key={t} className="mono" style={{
-        fontSize: 10, padding: '2px 7px', borderRadius: 4,
-        background: 'var(--chip)', color: 'var(--ink-soft)'
-      }}>{t}</span>
-      )}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+          <span className="mono" style={{ fontSize: 10.5, letterSpacing: 0.3, color: 'var(--ink-soft)' }}>
+            {p.tags.join(' · ')}
+          </span>
+          {truncated &&
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls={descriptionId}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded((value) => !value);
+              }}
+              className="mono"
+              style={{
+                marginLeft: 'auto',
+                padding: '0 2px',
+                fontSize: 10.5,
+                letterSpacing: 0.3,
+                color: 'var(--ink-soft)',
+                cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 4
+              }}>
+              {expanded ? 'less' : 'more'}
+              <M.span
+                aria-hidden="true"
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{ display: 'inline-block', fontSize: 11, lineHeight: 1 }}>
+                ⌄
+              </M.span>
+            </button>
+          }
         </div>
       </div>
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: 4, marginTop: -3
+        gap: 4, marginTop: -2
       }}>
       <M.button
         type="button"
@@ -680,36 +708,6 @@ const ProjectRow = ({ p, i, accent, navigate, reduceMotion }) => {
         }}>
         <Icon name="arrow-up-right" size={14} />
       </M.button>
-        {truncated &&
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-controls={descriptionId}
-            aria-label={expanded ? 'Collapse project description' : 'Expand project description'}
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded((value) => !value);
-            }}
-            className="mono"
-            style={{
-              display: 'block',
-              margin: 0,
-              padding: '0 3px',
-              fontSize: 12,
-              lineHeight: 1,
-              color: 'var(--ink-faint)',
-              opacity: 0.8,
-              cursor: 'pointer'
-            }}>
-            <M.span
-              aria-hidden="true"
-              animate={{ rotate: expanded ? 180 : 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
-              style={{ display: 'inline-block' }}>
-              ⌄
-            </M.span>
-          </button>
-        }
       </div>
     </M.li>
   );
@@ -718,12 +716,11 @@ const ProjectRow = ({ p, i, accent, navigate, reduceMotion }) => {
 const ProjectsPage = ({ accent, navigate }) => {
   const [activeTab, setActiveTab] = useState('featured');
   const reduceMotion = useReducedMotion();
-  const activeIndex = projectTabs.indexOf(activeTab);
-  const wheelOrder = [
-    projectTabs[(activeIndex + projectTabs.length - 1) % projectTabs.length],
-    activeTab,
-    projectTabs[(activeIndex + 1) % projectTabs.length]
-  ];
+  const tabCounts = {
+    'working on': projects.filter((project) => project.workingOn).length,
+    'featured': projects.filter((project) => project.featured).length,
+    'everything': projects.length
+  };
   const filteredProjects = [...projects]
     .filter((project) =>
       activeTab === 'everything' ||
@@ -733,7 +730,7 @@ const ProjectsPage = ({ accent, navigate }) => {
 
   return (
     <PagePlaceholder>
-      <SectionLabel>projects · {filteredProjects.length} shipped</SectionLabel>
+      <SectionLabel>projects · {projects.length} shipped</SectionLabel>
       <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 22px', lineHeight: 1.1, color: 'var(--ink)' }}>
         Things I've put into the world.
       </h1>
@@ -742,96 +739,41 @@ const ProjectsPage = ({ accent, navigate }) => {
           role="tablist"
           aria-label="Filter projects"
           style={{
-            width: 'min(100%, 344px)', margin: '0 auto 22px',
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-            alignItems: 'center', gap: 2,
-            perspective: '820px', transformStyle: 'preserve-3d'
+            display: 'flex', alignItems: 'baseline', gap: 24,
+            margin: '0 0 24px'
           }}>
-          {wheelOrder.map((tab, position) => {
+          {projectTabs.map((tab) => {
             const active = tab === activeTab;
-            const side = position === 0 ? -1 : position === 2 ? 1 : 0;
-            const characters = Array.from(tab);
-            const characterCenter = (characters.length - 1) / 2;
-            const characterStep = 5.5;
-            const cylinderRadius = 94;
-            const flatCharacterStep = 9;
             return (
               <button
                 type="button"
                 key={tab}
                 role="tab"
                 aria-selected={active}
-                aria-label={tab}
                 onClick={() => setActiveTab(tab)}
+                className="mono"
                 style={{
-                  position: 'relative', width: '100%',
-                  padding: '8px 3px 10px',
-                  fontFamily: 'Geist Mono, monospace',
-                  fontSize: 12.5,
-                  color: 'var(--ink)',
+                  position: 'relative',
+                  padding: '2px 1px 9px',
+                  fontSize: 12,
+                  letterSpacing: 0.3,
                   whiteSpace: 'nowrap',
+                  color: active ? 'var(--ink)' : 'var(--ink-soft)',
+                  transition: 'color 0.2s ease',
                   cursor: 'pointer'
                 }}>
-                <M.span
-                  layout
-                  animate={{
-                    opacity: active ? 1 : 0.42,
-                    scale: reduceMotion ? 1 : active ? 1 : 0.9,
-                    rotateY: reduceMotion ? 0 : side * -42,
-                    z: reduceMotion ? 0 : active ? 0 : -48
-                  }}
-                  transition={{
-                    duration: reduceMotion ? 0.01 : 0.56,
-                    ease: [0.22, 1, 0.36, 1],
-                    layout: { duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }
-                  }}
-                  style={{
-                    display: 'block',
-                    position: 'relative',
-                    height: '1.2em',
-                    fontWeight: active ? 700 : 400,
-                    pointerEvents: 'none',
-                    transformStyle: 'preserve-3d',
-                    transformOrigin: '50% 50%'
-                  }}>
-                  {characters.map((character, characterIndex) => {
-                    const characterOffset = characterIndex - characterCenter;
-                    const characterAngle = characterStep * characterOffset;
-                    return (
-                      <M.span
-                        key={`${tab}-${characterIndex}`}
-                        aria-hidden="true"
-                        animate={{
-                          transform: reduceMotion
-                            ? `translateX(${characterOffset * flatCharacterStep}px)`
-                            : `rotateY(${characterAngle}deg) translateZ(${cylinderRadius}px)`
-                        }}
-                        transition={{ duration: reduceMotion ? 0.01 : 0.56, ease: [0.22, 1, 0.36, 1] }}
-                        style={{
-                          position: 'absolute',
-                          left: '50%',
-                          top: 0,
-                          width: '1ch',
-                          marginLeft: '-0.5ch',
-                          textAlign: 'center',
-                          whiteSpace: 'pre',
-                          pointerEvents: 'none',
-                          transformStyle: 'preserve-3d',
-                          transformOrigin: '50% 50%'
-                        }}>
-                        {character === ' ' ? '\u00a0' : character}
-                      </M.span>
-                    );
-                  })}
-                </M.span>
+                {tab}
+                <span style={{ marginLeft: 7, fontSize: 10.5, color: active ? 'var(--ink-soft)' : 'var(--ink-faint)' }}>
+                  {tabCounts[tab]}
+                </span>
                 {active &&
                   <M.span
                     layoutId="project-tab-marker"
                     transition={{ duration: reduceMotion ? 0.01 : 0.36, ease: [0.22, 1, 0.36, 1] }}
                     style={{
-                      position: 'absolute', left: '50%', bottom: 3,
-                      width: 18, height: 1.5, borderRadius: 999,
-                      background: accent, transform: 'translateX(-50%)',
+                      position: 'absolute', left: 1, right: 1, bottom: 4,
+                      height: 1.5, borderRadius: 999,
+                      background: accent,
                       pointerEvents: 'none'
                     }}
                   />
@@ -963,22 +905,12 @@ const resumeData = {
   experience: [
     {
       org: 'University of Central Florida',
-      role: 'Teaching Assistant - Data Structures & Algorithms (COP 3502C)',
+      role: 'Teaching Assistant - Data Structures & Algorithms (COP 3502C) and Machine Learning (CAP 4611)',
       dates: 'Jan 2025 – Present', loc: 'Orlando, FL',
       bullets: [
-        'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables), instructing over 100 students per semester.',
-        'Designed programming assignments targeting specific learning goals such as recursive thinking, dynamic memory management, and reasoning about augmented data structures.',
+        'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables) and ML topics including classification pipelines, ensemble methods, and clustering.',
+        'Designed programming assignments including a BST problem with augmented subtree sizes and a recursive permutation problem on team optimization.',
         'Grade assignments and provide constructive feedback to help students improve algorithmic problem-solving and debugging of C-based implementations.',
-      ],
-    },
-    {
-      org: 'Downtown Diner Celebration',
-      role: 'Food Server',
-      dates: 'Jan 2024 – Present', loc: 'Celebration, FL',
-      bullets: [
-        'Directing tourists to desired areas to travel to in local vicinity.',
-        'Exceptional multitasking skills due to larger responsibility in restaurant.',
-        'Efficiently managing time between customer requests and job responsibilities.',
       ],
     },
     {
@@ -995,13 +927,21 @@ const resumeData = {
   ],
   projects: [
     {
-      name: 'Nudge',
-      stack: 'Next.js, TypeScript, tRPC, Zod, Supabase, MediaPipe, LiveKit, Tailwind CSS',
+      name: 'Cap Checker',
+      stack: 'Next.js, TypeScript, Gemini API, Supabase, Playwright · BloomKnights 2026 Hackathon',
       bullets: [
-        'Developing a student accountability platform that pairs college students for live video-call study sessions with real-time distraction tracking.',
-        'Integrated MediaPipe computer vision on the client side to detect off-screen gaze and phone usage during study sessions.',
-        'Designed backend architecture with Supabase for authentication (.edu email gating), Postgres database, and realtime session synchronization.',
-        'Implemented solo and duo session modes with structured timer workflows and AI-generated end-of-session productivity reports.',
+        'Built a web app that fact-checks short-form financial videos, turning a pasted or uploaded clip into a source-backed scorecard that rates each claim as supported, contradicted, or unverifiable.',
+        'Used Google’s Gemini AI to pull spoken claims from videos and Google Search plus live Finnhub market data to verify them, then computed a deterministic “Cap Score” for each video.',
+        'Built a searchable feed of vetted videos backed by Supabase, with streamed real-time analysis progress and full unit and end-to-end test coverage via Vitest and Playwright.',
+      ],
+    },
+    {
+      name: 'Terminal Presence',
+      stack: 'Go, Discord IPC, systems programming',
+      bullets: [
+        'Built a cross-platform CLI tool that displays which command-line program you are actively using as a live Discord status, similar to how Discord shows the game you are playing.',
+        'Detects 48 built-in tools by scanning running processes, spotlighting the busiest one with its logo, an elapsed timer, and a list of other active tools, all with no bot or token required.',
+        'Supports hot-reloaded TOML configuration, privacy-first defaults, custom user-defined tools, and start-at-login on macOS and Linux; distributed via Homebrew and prebuilt Linux packages.',
       ],
     },
     {
@@ -1085,7 +1025,7 @@ const ResumePage = ({ accent }) => {
           </h1>
         </div>
         <a
-          href="assets/resume.pdf"
+          href="assets/resume_ruth.pdf"
           download="marcus-ruth-resume.pdf"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -1606,7 +1546,7 @@ const ContactForm = ({ accent }) => {
 };
 
 const ContactPage = ({ accent, navigate }) => {
-  const [emailHover, setEmailHover] = useState(false);
+  const [hoverKey, setHoverKey] = useState(null);
   const rows = [
     ['email', 'contact@polter.sh', 'mail', null],
     ['github', 'github.com/polter-dev', 'github', 'https://github.com/polter-dev'],
@@ -1624,44 +1564,45 @@ const ContactPage = ({ accent, navigate }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'var(--line)', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--chip-line)' }}>
       {rows.map(([k, v, icon, href]) => {
     const isEmail = k === 'email';
+    const hovered = hoverKey === k;
     const inner = <React.Fragment>
-          <div style={{ color: isEmail && emailHover ? accent : 'var(--ink-faint)', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
+          <div style={{ color: hovered ? accent : 'var(--ink-faint)', transition: 'color 0.15s ease' }}><Icon name={icon} size={14} /></div>
           <span className="mono" style={{ fontSize: 11, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: 1.2, width: 64 }}>{k}</span>
-          {href ? (
-            <a href={href} target="_blank" rel="noopener noreferrer"
-               style={{ fontSize: 14, color: 'var(--ink)', fontFamily: 'Geist Mono, monospace', textDecoration: 'none' }}>
-              {v}
-            </a>
-          ) : (
-            <span style={{ fontSize: 14, color: 'var(--ink)', fontFamily: 'Geist Mono, monospace' }}>{v}</span>
-          )}
-          {isEmail &&
+          <span style={{ fontSize: 14, color: 'var(--ink)', fontFamily: 'Geist Mono, monospace' }}>{v}</span>
+          {isEmail ?
             <span className="mono" style={{
               marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6,
               fontSize: 10, textTransform: 'uppercase', letterSpacing: 1,
               padding: '4px 10px', borderRadius: 999,
               color: accent, background: `${accent}14`,
-              border: `1px solid ${accent}${emailHover ? '55' : '33'}`,
+              border: `1px solid ${accent}${hovered ? '55' : '33'}`,
               transition: 'border-color 0.15s ease'
             }}>
               compose<Icon name="message" size={11} />
+            </span> :
+            <span style={{
+              marginLeft: 'auto', display: 'inline-flex',
+              color: hovered ? accent : 'var(--ink-ghost)',
+              transition: 'color 0.15s ease'
+            }}>
+              <Icon name="arrow-up-right" size={13} />
             </span>
           }
         </React.Fragment>;
+    const rowStyle = {
+      display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+      background: hovered ? 'var(--card-hover)' : 'var(--card)', cursor: 'pointer',
+      transition: 'background 0.15s ease'
+    };
     if (isEmail)
       return <div key={k} role="button" tabIndex={0}
         onClick={() => navigate('/contact/compose')}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/contact/compose'); } }}
-        onMouseEnter={() => setEmailHover(true)} onMouseLeave={() => setEmailHover(false)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-          background: emailHover ? 'var(--card-hover)' : 'var(--card)', cursor: 'pointer',
-          transition: 'background 0.15s ease'
-        }}>{inner}</div>;
-    return <div key={k} style={{
-      display: 'flex', alignItems: 'center', gap: 14,
-      padding: '14px 16px', background: 'var(--card)'
-    }}>{inner}</div>;
+        onMouseEnter={() => setHoverKey(k)} onMouseLeave={() => setHoverKey(null)}
+        style={rowStyle}>{inner}</div>;
+    return <a key={k} href={href} target="_blank" rel="noopener noreferrer"
+      onMouseEnter={() => setHoverKey(k)} onMouseLeave={() => setHoverKey(null)}
+      style={{ ...rowStyle, textDecoration: 'none' }}>{inner}</a>;
       })}
     </div>
     <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink-faint)', fontSize: 12 }}>
