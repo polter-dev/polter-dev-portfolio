@@ -926,10 +926,11 @@ const RecursionPage = ({ navigate }) => {
 
 
 const stackGroups = [
-  { label: 'languages',  items: ['Python', 'Java', 'C', 'C++', 'Go', 'TypeScript', 'JavaScript', 'SQL'] },
-  { label: 'web',        items: ['Next.js', 'tRPC', 'Zod', 'Supabase', 'Postgres', 'React'] },
-  { label: 'libraries',  items: ['NumPy', 'pandas', 'Matplotlib', 'Seaborn', 'scikit-learn', 'Nixtla'] },
-  { label: 'developer tools', items: ['Git', 'VS Code', 'Unix / Linux', 'AWS', 'PostgreSQL', 'Docker', 'tmux', 'neovim'] },
+  { label: 'languages',  items: ['Python', 'Java', 'C', 'C++', 'Go', 'Swift', 'TypeScript', 'JavaScript', 'SQL'] },
+  { label: 'web & mobile', items: ['Next.js', 'React', 'React Native', 'SwiftUI', 'tRPC', 'Zod', 'Supabase', 'Postgres'] },
+  { label: 'libraries',  items: ['PyTorch', 'NumPy', 'pandas', 'Matplotlib', 'Seaborn', 'scikit-learn', 'Nixtla', 'Hugging Face', 'Transformers'] },
+  { label: 'ai / ml',    items: ['classification', 'regression', 'ensembles', 'clustering', 'CNNs / DNNs', 'hyperparameter tuning', 'NLP', 'RAG', 'LLMs'] },
+  { label: 'developer tools', items: ['Claude Code', 'Codex', 'Git', 'VS Code', 'Unix / Linux', 'AWS', 'PostgreSQL', 'Docker', 'tmux', 'neovim'] },
   { label: 'concepts',   items: ['data structures', 'algorithms', 'distributed systems', 'forecasting'] },
 ];
 
@@ -967,74 +968,85 @@ const StackPage = ({ accent }) =>
   </PagePlaceholder>;
 
 
-// Resume content as data — rendered natively in HTML, no PDF viewer chrome
+// Resume content as data — rendered natively in HTML, no PDF viewer chrome.
+// Mirrors ../resume/resume_ruth.tex minus phone + email (assets/resume_ruth.pdf is built the same way).
 const resumeData = {
   name: 'Marcus Ruth',
+  updated: 'Oct 2026',
   links: [
+    { label: 'polter.sh',                  href: 'https://polter.sh/' },
     { label: 'linkedin.com/in/marcusruth', href: 'https://linkedin.com/in/marcusruth' },
     { label: 'github.com/polter-dev',      href: 'https://github.com/polter-dev' },
   ],
   education: [
-    { school: 'University of Central Florida', degree: 'Bachelor of Science in Computer Science', dates: 'Aug. 2024 – May 2027', loc: 'Orlando, FL' },
-    { school: 'Valencia College',              degree: 'Associates of Arts - General Studies',     dates: 'Aug. 2022 - May 2024', loc: 'Orlando, FL' },
+    { school: 'University of Central Florida', degree: 'B.S. Computer Science · Accelerated BS to MS Program', dates: 'Aug 2024 – May 2027', loc: 'Orlando, FL' },
+    { school: 'Valencia College',              degree: 'Associate of Arts · General Studies',                   dates: 'Aug 2022 – May 2024', loc: 'Orlando, FL' },
   ],
   experience: [
     {
       org: 'University of Central Florida',
-      role: 'Teaching Assistant - Data Structures & Algorithms (COP 3502C) and Machine Learning (CAP 4611)',
+      role: 'Teaching Assistant · Data Structures & Algorithms (COP 3502C) and Machine Learning (CAP 4611)',
       dates: 'Jan 2025 – Present', loc: 'Orlando, FL',
       bullets: [
-        'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables) and ML topics including classification pipelines, ensemble methods, and clustering.',
-        'Designed programming assignments including a BST problem with augmented subtree sizes and a recursive permutation problem on team optimization.',
+        'Lead lab sessions and office hours covering data structures (trees, heaps, hash tables) and ML topics including classification pipelines, ensemble methods, clustering, and neural networks (NN, CNN, DNN).',
+        'Designed C assignments on dynamic memory allocation and stack vs. heap management, including a BST with augmented subtree sizes and a recursive permutation problem.',
         'Grade assignments and provide constructive feedback to help students improve algorithmic problem-solving and debugging of C-based implementations.',
       ],
     },
     {
       org: 'Mindhome',
-      role: 'Software Engineer - Internship',
+      role: 'Software Engineer · Internship',
       dates: 'Dec 2022 – Feb 2023', loc: 'Remote',
       bullets: [
         'Completed ROS2 training utilizing Python, building foundational skills in AI and robotics programming.',
         'Contributed to backend development in Ruby, implementing API endpoints and assisting with database integration to support core platform functionality.',
-        'Participated in code reviews and collaborated with senior engineers to refine application logic and improve system reliability.',
-        'Developed a holistic understanding of software development methodologies including Agile workflows and version control practices.',
+        'Collaborated with senior engineers in code reviews and Agile workflows to improve system reliability.',
       ],
     },
   ],
   projects: [
     {
-      name: 'Cap Checker',
-      stack: 'Next.js, TypeScript, Gemini API, Supabase, Playwright · BloomKnights 2026 Hackathon',
+      name: 'Sedge',
+      stack: 'Swift, SwiftUI, Plaid API, Python, LLMs/SLMs, Jev',
+      context: 'Graduate AI Course Project',
+      date: 'Sep 2026',
       bullets: [
-        'Built a web app that fact-checks short-form financial videos, turning a pasted or uploaded clip into a source-backed scorecard that rates each claim as supported, contradicted, or unverifiable.',
-        'Used Google’s Gemini AI to pull spoken claims from videos and Google Search plus live Finnhub market data to verify them, then computed a deterministic “Cap Score” for each video.',
-        'Built a searchable feed of vetted videos backed by Supabase, with streamed real-time analysis progress and full unit and end-to-end test coverage via Vitest and Playwright.',
+        'Building an iOS banking AI agent that uses the free Plaid API to answer questions about spending.',
+        'Designing a hybrid SLM/LLM setup: an on-device small language model answers first and escalates to a cloud LLM when unsure, benchmarked on 670+ synthetic transactions.',
+        "Integrating TypeSafe's Jev classifier for tool routing and escalation; early tests routed 11/11 answerable queries to the correct tool in ~0.25s while sending only question text, never financial data.",
+      ],
+    },
+    {
+      name: 'Encore',
+      stack: 'React Native, Whisper, MobileCLIP, Qwen3, RAG, LoRA',
+      context: 'UCF Capstone',
+      date: 'Aug 2026',
+      bullets: [
+        'Project manager and lead AI engineer for an app that recalls your day, like "where are my keys?"',
+        'Designed the AI pipeline: Whisper transcription, MobileCLIP2 image embeddings, a Qwen3-0.6B moment classifier, and SLMs querying a self-evolving EvoGraph-R1 knowledge graph.',
+        'Architected a model cascade where a lightweight trigger model runs continuously and calls heavier embedding and generation models only when needed, keeping inference cheap enough for on-device use.',
+        'Benchmarking RAG retrievers (BGE, E5, GTE, GraphRAG) on accuracy, latency, and memory, and fine-tuning small models with LoRA and distillation to improve on-device performance.',
       ],
     },
     {
       name: 'Terminal Presence',
-      stack: 'Go, Discord IPC, systems programming',
+      stack: 'Go, Discord IPC, GoReleaser, systems programming',
+      context: { label: 'GitHub', href: 'https://github.com/polter-dev/discord_terminal_presence' },
+      date: 'Jul 2026',
       bullets: [
-        'Built a cross-platform CLI tool that displays which command-line program you are actively using as a live Discord status, similar to how Discord shows the game you are playing.',
-        'Detects 48 built-in tools by scanning running processes, spotlighting the busiest one with its logo, an elapsed timer, and a list of other active tools, all with no bot or token required.',
-        'Supports hot-reloaded TOML configuration, privacy-first defaults, custom user-defined tools, and start-at-login on macOS and Linux; distributed via Homebrew and prebuilt Linux packages.',
-      ],
-    },
-    {
-      name: 'miniredis',
-      stack: 'C++, POSIX sockets, systems programming',
-      bullets: [
-        'Built a Redis-like in-memory key–value store from scratch using modern C++ and POSIX sockets.',
-        'Implemented event-driven TCP server with poll() capable of handling multiple concurrent client connections.',
-        'Developed RESP protocol serialization and core commands (SET, GET, PING, ECHO) with per-client buffering.',
+        'Shipped an open-source cross-platform Go CLI that shows your active terminal program as a live Discord Rich Presence status; 41 user downloads and 7 GitHub stars across 5 releases.',
+        'Detects 48 built-in tools by scanning running processes, using local IPC with no bot or token.',
+        'Supports hot-reloaded TOML config and custom tools; distributed via Homebrew, Scoop, and .deb/.rpm packages with start-at-login on macOS, Linux, and Windows.',
+        'Wrote 22K+ lines of Go with 960+ tests, a checksum-verified installer, and a guided setup wizard.',
       ],
     },
   ],
   skills: [
-    { label: 'Languages',       items: 'Python, Java, C/C++, Go, TypeScript, JavaScript, SQL' },
-    { label: 'Web',             items: 'Next.js, React, tRPC, Zod, Supabase, Postgres' },
-    { label: 'Libraries',       items: 'NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, Nixtla' },
-    { label: 'Developer Tools', items: 'Git, VS Code, Unix/Linux, AWS, PostgreSQL, Neovim' },
+    { label: 'Languages',       items: 'Python, Java, C/C++, Go, Swift, TypeScript, JavaScript, SQL' },
+    { label: 'Web & Mobile',    items: 'Next.js, React, React Native, SwiftUI, tRPC, Zod, Supabase, Postgres' },
+    { label: 'Libraries',       items: 'PyTorch, NumPy, Pandas, Matplotlib, Seaborn, Scikit-learn, Nixtla, Hugging Face, Transformers' },
+    { label: 'AI/ML',           items: 'Classification, Regression, Ensembles, Clustering, CNNs/DNNs, Hyperparameter Tuning, NLP, RAG, LLMs' },
+    { label: 'Developer Tools', items: 'Claude Code, Codex, Git, VS Code, Unix/Linux, AWS, PostgreSQL, Neovim' },
   ],
 };
 
@@ -1053,6 +1065,23 @@ const ResumeSection = ({ label, children }) => (
   </section>
 );
 
+const ResumeBullets = ({ items }) => (
+  <ul style={{
+    margin: '8px 0 0', padding: 0, listStyle: 'none',
+    display: 'flex', flexDirection: 'column', gap: 5,
+  }}>
+    {items.map((b, i) => (
+      <li key={i} style={{
+        fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty',
+        paddingLeft: 16, position: 'relative',
+      }}>
+        <span style={{ position: 'absolute', left: 0, top: 0, color: 'var(--ink-faint)' }}>·</span>
+        {b}
+      </li>
+    ))}
+  </ul>
+);
+
 const ResumeRow = ({ left, right, sub, subRight, children }) => (
   <div style={{ marginBottom: children ? 14 : 10 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
@@ -1060,27 +1089,12 @@ const ResumeRow = ({ left, right, sub, subRight, children }) => (
       <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{right}</span>
     </div>
     {(sub || subRight) && (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginTop: 2 }}>
-        <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>{sub}</span>
-        <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{subRight}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, marginTop: 2 }}>
+        <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic', lineHeight: 1.45 }}>{sub}</span>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{subRight}</span>
       </div>
     )}
-    {children && (
-      <ul style={{
-        margin: '8px 0 0', padding: 0, listStyle: 'none',
-        display: 'flex', flexDirection: 'column', gap: 5,
-      }}>
-        {children.map((b, i) => (
-          <li key={i} style={{
-            fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty',
-            paddingLeft: 16, position: 'relative',
-          }}>
-            <span style={{ position: 'absolute', left: 0, top: 0, color: 'var(--ink-faint)' }}>·</span>
-            {b}
-          </li>
-        ))}
-      </ul>
-    )}
+    {children && <ResumeBullets items={children} />}
   </div>
 );
 
@@ -1095,7 +1109,7 @@ const ResumePage = ({ accent }) => {
     >
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
         <div>
-          <SectionLabel>resume · {new Date().getFullYear()}</SectionLabel>
+          <SectionLabel>resume · updated {resumeData.updated.toLowerCase()}</SectionLabel>
           <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: 0, lineHeight: 1.1, color: 'var(--ink)' }}>
             Resume.
           </h1>
@@ -1173,25 +1187,19 @@ const ResumePage = ({ accent }) => {
 
         <ResumeSection label="Projects">
           {resumeData.projects.map(p => (
-            <div key={p.name} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+            <div key={p.name} style={{ marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--ink)' }}>{p.name}</span>
-                <span style={{ color: 'var(--ink-ghost)' }}>|</span>
-                <span className="mono" style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic' }}>
-                  {p.stack}
-                </span>
+                <span className="mono" style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{p.date}</span>
               </div>
-              <ul style={{ margin: '6px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {p.bullets.map((b, i) => (
-                  <li key={i} style={{
-                    fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty',
-                    paddingLeft: 16, position: 'relative',
-                  }}>
-                    <span style={{ position: 'absolute', left: 0, top: 0, color: 'var(--ink-faint)' }}>·</span>
-                    {b}
-                  </li>
-                ))}
-              </ul>
+              <div className="mono" style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic', marginTop: 2, lineHeight: 1.5 }}>
+                {p.stack}
+                <span style={{ color: 'var(--ink-ghost)' }}>{'  ·  '}</span>
+                {typeof p.context === 'string'
+                  ? p.context
+                  : <a href={p.context.href} target="_blank" rel="noopener" style={{ color: 'var(--ink-body)', borderBottom: `1px solid ${accent}66` }}>{p.context.label}</a>}
+              </div>
+              <ResumeBullets items={p.bullets} />
             </div>
           ))}
         </ResumeSection>
@@ -1200,7 +1208,7 @@ const ResumePage = ({ accent }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {resumeData.skills.map(s => (
               <div key={s.label} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: 'var(--ink-body)', lineHeight: 1.55, textWrap: 'pretty' }}>
-                <span style={{ fontWeight: 600, color: 'var(--ink)', minWidth: 120 }}>{s.label}:</span>
+                <span style={{ fontWeight: 600, color: 'var(--ink)', minWidth: 120, flexShrink: 0 }}>{s.label}:</span>
                 <span>{s.items}</span>
               </div>
             ))}
@@ -1212,7 +1220,7 @@ const ResumePage = ({ accent }) => {
           fontSize: 10, color: 'var(--ink-faint)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
         }}>
           <span>polter-dev · marcus ruth</span>
-          <span>last updated · {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          <span>last updated · {resumeData.updated.toLowerCase()}</span>
         </div>
       </article>
     </M.div>

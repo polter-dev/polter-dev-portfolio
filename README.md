@@ -24,6 +24,6 @@ I wanted this to look like me, not like a template. A few things that were delib
 - `index-backdrop.html`: same site with the neural network canvas backdrop wired in.
 - `tweaks-panel.jsx`: a small dev panel for tuning the palette and layout live.
 - `ai-backdrop.js`: the backdrop canvas layer, dropped in via a `<script>` tag.
-- `assets/`: static files. `resume.pdf` and `avatar.jpg`, plus the favicon set in `assets/favicon/`.
+- `assets/`: static files. `resume_ruth.pdf` (public copy, no phone or email) and `avatar.jpg`, plus the favicon set in `assets/favicon/`.
 
 Hosted on [https://polter.sh/](https://polter.sh/)
