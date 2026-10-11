@@ -568,6 +568,12 @@ const projects = [
   meta: 'Go · Discord Rich Presence · CLI · systems',
   cover: { kind: 'image', src: 'assets/projects/termp-demo.gif', bg: '#16131a', ratio: '1000 / 525',
     alt: 'termp showing the active terminal tool as Discord Rich Presence, cycling through Claude Code, Codex CLI, Gemini CLI, Aider and Ollama' } },
+{ id: 'societysim', year: '2026', name: 'SocietySim', hackathon: true,
+  url: 'https://github.com/polter-dev/societysim', live: 'https://society-sim.us',
+  desc: 'AI models play Werewolf against each other to measure who lies, who catches lies, and who persuades.',
+  meta: '2026 · Knight Hacks IX · Python · TypeScript · LLM evals',
+  cover: { kind: 'image', src: 'assets/projects/societysim.jpg', bg: '#0e1a17',
+    alt: 'SocietySim title over a moonlit village at night' } },
 { id: 'sedge', year: '2026', name: 'Sedge', workingOn: true,
   url: 'https://github.com/polter-dev/Sedge',
   desc: 'iOS banking agent that answers questions about your spending over Plaid.',
@@ -578,10 +584,10 @@ const projects = [
   desc: 'A wearable and app that recall your day. "Where are my keys?"',
   meta: '2026 · UCF capstone · React Native · Whisper · Qwen3 · RAG',
   cover: { kind: 'encore' } },
-{ id: 'capcheck', year: '2026', name: 'CapChecker',
+{ id: 'capcheck', year: '2026', name: 'CapChecker', hackathon: true,
   url: 'https://github.com/azizu06/CapChecker',
   desc: 'Fact checks short form finance videos into a 0 to 100 Cap Score (truth score).',
-  meta: '2026 · hackathon · Next.js · Gemini · Supabase',
+  meta: '2026 · Bloom Knights Su26 · Next.js · Gemini · Supabase',
   cover: { kind: 'image', src: 'assets/projects/capcheck.jpg', light: true, position: 'center top',
     alt: "CapCheck's analyze page: Is that stock tip cap? Check before you act." } },
 { id: 'site', year: '2026', name: 'This Website', internal: '/recursion', live: 'https://polter.sh/',
@@ -759,6 +765,17 @@ const WorkingOnChip = () =>
   </span>;
 
 
+const HackathonChip = () =>
+<span className="wip mono" style={{
+  display: 'inline-flex', alignItems: 'center', gap: 7, padding: '4px 9px', borderRadius: 4,
+  background: '#A78BFA', color: '#1a1a1a', fontSize: 10, fontWeight: 500,
+  letterSpacing: 0.8, textTransform: 'uppercase', cursor: 'default'
+}}>
+    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#1a1a1a' }} />
+    hackathon
+  </span>;
+
+
 const LiveDot = () =>
 <span aria-label="live" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--live-fg)', boxShadow: '0 0 0 3px var(--live-bg)' }} />;
 
@@ -814,6 +831,7 @@ const FeaturedCard = ({ p, i, accent, navigate, reduceMotion }) =>
         <div className="mono" style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: 'var(--ink-faint)' }}>
           <span>{p.year}</span>
           {p.workingOn && <WorkingOnChip />}
+          {p.hackathon && <HackathonChip />}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {p.live && <LinkChip href={p.live} label="live" live />}
@@ -838,6 +856,7 @@ const ProjectCard = ({ p, i, accent, navigate, reduceMotion }) =>
             {p.live && <LiveDot />}
           </span>
           {p.workingOn && <WorkingOnChip />}
+          {p.hackathon && <HackathonChip />}
         </span>
         <ArrowLink p={p} accent={accent} navigate={navigate} />
       </div>
