@@ -537,19 +537,16 @@ const AboutPage = () =>
     <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 20px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Hi, I'm Marcus.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 14px', textWrap: 'pretty' }}>CS undergrad at UCF. I'm a teaching assistant for Data Structures & Algorithms and work part time at a restaurant. Most of what I know comes from coursework I've taken seriously and side projects I've followed through on some distributed systems, some machine learning. I learn by building: a Redis clone in C++ to understand event loops from the socket up.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 14px', textWrap: 'pretty' }}>I'm a CS undergrad at UCF & I'm a teaching assistant for Data Structures & Algorithms! Most of what I know comes from coursework I've completed side projects that entail distributed systems, machine learning, systems programming and AI. Some of my favorite languages I use is C++, Python and Go that all aid in devleoping my projects!
 
   </p>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 14px', textWrap: 'pretty' }}>Lately I've been drawn to distributed systems and machine learning, and the places where the two overlap. Outside of academics, I have a passion for cars, working on them in the garage with a few tools, and enjoy scenic journeys through nature. I play video games with friends and enjoy using coding tools into the day to day around them.
+    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 14px', textWrap: 'pretty' }}>Lately I've been drawn to more AI focused projects. Outside of my academics, I have a passion for cars, going on hikes and gaming with friends.
 
   </p>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 28px', textWrap: 'pretty' }}>
-      I like things I can take apart and put back together: code, cars, ranked ladders. Same instinct, different tools.
-    </p>
     <div style={{ display: 'flex', gap: 24, paddingTop: 20, borderTop: '1px solid var(--line)', flexWrap: 'wrap' }}>
       {[
     ['based in', 'Orlando, FL'],
-    ['working on', 'Learning Nixtla'],
+    ['working on', 'Ai Projects'],
     ['reading', 'Meditations - Marcus Aurelius']].
     map(([k, v]) =>
     <div key={k}>
@@ -1661,9 +1658,6 @@ const ContactPage = ({ accent, navigate }) => {
     <h1 style={{ fontSize: 38, fontWeight: 500, letterSpacing: -1, margin: '0 0 24px', lineHeight: 1.1, color: 'var(--ink)' }}>
       Send a short note.
     </h1>
-    <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--ink-body)', margin: '0 0 32px', maxWidth: 480 }}>I read everything. I reply to most. Email is the fastest path. I check it several times a day, so feel free to send one whenever.
-
-  </p>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'var(--line)', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--chip-line)' }}>
       {rows.map(([k, v, icon, href]) => {
     const isEmail = k === 'email';
