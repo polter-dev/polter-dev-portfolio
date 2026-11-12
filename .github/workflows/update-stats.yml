@@ -1,0 +1,61 @@
+name: Update stats
+
+on:
+  schedule:
+    - cron: "23 6 * * *" # daily, 06:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stats
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch stats and write stats.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: polter-dev/discord_terminal_presence
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+
+          # gh api exits non-zero on any non-2xx response.
+          gh api "repos/$REPO" > "$tmp/repo.json"
+          gh api --paginate --slurp "repos/$REPO/releases?per_page=100" > "$tmp/releases.json"
+
+          stars="$(jq -e '.stargazers_count | if type == "number" then . else error("missing stargazers_count") end' "$tmp/repo.json")"
+          # Binaries only: checksums.txt and the Homebrew/Scoop manifests are not installs.
+          downloads="$(jq -e '
+            if type == "array" then . else error("unexpected releases response") end
+            | [ .[][] | .assets[] | select(.name | test("\\.(tar\\.gz|zip|deb|rpm)$")) | .download_count ]
+            | if all(type == "number") then add // 0 else error("missing download_count") end
+          ' "$tmp/releases.json")"
+          current="$(jq -e --arg r "$REPO" '.[$r].downloads | if type == "number" then . else error("no current downloads") end' stats.json)"
+
+          echo "stars=$stars downloads=$downloads (current downloads=$current)"
+          [[ "$stars" =~ ^[0-9]+$ && "$downloads" =~ ^[0-9]+$ ]] || { echo "::error::non-integer stats"; exit 1; }
+          (( downloads > 0 )) || { echo "::error::downloads total is 0"; exit 1; }
+          (( downloads >= current )) || { echo "::error::downloads fell from $current to $downloads"; exit 1; }
+
+          printf '{\n  "%s": { "downloads": %s, "stars": %s }\n}\n' "$REPO" "$downloads" "$stars" > "$tmp/stats.json"
+          mv "$tmp/stats.json" stats.json
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- stats.json; then
+            echo "stats.json unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stats.json
+          git commit -m "Update stats.json"
+          git push origin HEAD:main

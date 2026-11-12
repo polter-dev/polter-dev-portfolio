@@ -897,18 +897,11 @@ const LinkChip = ({ href, label, live }) =>
   </a>;
 
 
-// One fetch per repo per page load, so revisiting Projects doesn't burn GitHub's 60 req/hr anonymous limit.
+// Reads the site's own stats.json (keyed by repo, refreshed by a scheduled job), so visitors never call GitHub's API.
 const repoStatsCache = {};
-const fetchRepoStats = (repo) => repoStatsCache[repo] || (repoStatsCache[repo] = Promise.all(
-  ['', '/releases?per_page=100'].map((path) =>
-    fetch('https://api.github.com/repos/' + repo + path).then((r) => r.ok ? r.json() : Promise.reject(r.status)))
-).then(([info, releases]) => ({
-  stars: info.stargazers_count,
-  // binaries only: checksums and the brew/scoop manifests aren't installs
-  downloads: releases.flatMap((r) => r.assets).
-    filter((a) => /\.(tar\.gz|zip|deb|rpm)$/.test(a.name)).
-    reduce((n, a) => n + a.download_count, 0)
-})));
+const fetchRepoStats = (repo) => repoStatsCache[repo] || (repoStatsCache[repo] =
+  fetch('stats.json').then((r) => r.ok ? r.json() : Promise.reject(r.status)).
+    then((all) => all[repo] || Promise.reject('no stats for ' + repo)));
 
 // Each digit is a 0-9 reel positioned by its value, so the CSS transition rolls only the digits that change.
 const RollingNumber = ({ value, shown }) => {
