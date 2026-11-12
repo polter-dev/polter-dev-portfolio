@@ -195,6 +195,38 @@
   }
   .proj-link { opacity: 0.7; border: 0; background: transparent; padding: 0; cursor: pointer; transition: opacity 0.15s ease, background 0.15s ease; }
   .proj-link:hover { opacity: 1; background: var(--chip); }
+
+  /* Sedge cover: the question pops in, dots think, the answer pops in and its bars fill, then it clears and repeats */
+  .sg-q, .sg-a, .sg-bar { transform-box: fill-box; }
+  .sg-q { transform-origin: 100% 100%; animation: sg-q 8s cubic-bezier(0.34, 1.56, 0.64, 1) infinite both; }
+  .sg-a { transform-origin: 0 100%; animation: sg-a 8s cubic-bezier(0.34, 1.56, 0.64, 1) infinite both; }
+  .sg-bar { transform-origin: 0 50%; animation: sg-bar 8s cubic-bezier(0.22, 1, 0.36, 1) infinite both; }
+  .sg-dots { opacity: 0; animation: sg-dots 8s linear infinite both; }
+  .sg-dot { animation: sg-dot 0.9s ease-in-out infinite; }
+  @keyframes sg-q {
+    0%, 4% { opacity: 0; transform: scale(0.5); }
+    11%, 88% { opacity: 1; transform: none; }
+    94%, 100% { opacity: 0; transform: none; }
+  }
+  @keyframes sg-dots {
+    0%, 13% { opacity: 0; }
+    16%, 36% { opacity: 1; }
+    39%, 100% { opacity: 0; }
+  }
+  @keyframes sg-dot { 50% { transform: translateY(-5px); } }
+  @keyframes sg-a {
+    0%, 38% { opacity: 0; transform: scale(0.5); }
+    46%, 88% { opacity: 1; transform: none; }
+    94%, 100% { opacity: 0; transform: none; }
+  }
+  @keyframes sg-bar {
+    0%, 43% { transform: scaleX(0); }
+    51%, 100% { transform: none; }
+  }
+  /* still frame: the question and its answer, no dots */
+  @media (prefers-reduced-motion: reduce) {
+    .sg-q, .sg-a, .sg-bar, .sg-dots, .sg-dot { animation: none; }
+  }
 </style>
 </head>
 <body>
@@ -625,7 +657,6 @@ const cMid = { color: 'rgba(255,255,255,0.45)' };
 const cWhite = { color: '#ffffff' };
 const cOk = { color: '#4ade80' };
 const cChipOk = { padding: '1px 6px', borderRadius: 3, background: 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: 10 };
-const cRow3 = { display: 'grid', gridTemplateColumns: '112px 1fr auto', gap: 10 };
 const cBar = { height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.16)' };
 
 const ProjectCover = ({ cover, accent, featured }) => {
@@ -651,12 +682,29 @@ const ProjectCover = ({ cover, accent, featured }) => {
       );
 
     case 'sedge':
+      // a cropped phone; the question and the answer pop out past its edges. The answer is blank bars, never a made-up figure
       return (
-        <div style={{ ...coverBox, gap: 7, whiteSpace: 'nowrap' }}>
-          <div style={cWhite}>&gt; "how much did I spend on groceries?"</div>
-          <div style={{ ...cRow3, paddingTop: 4 }}><span style={cMid}>jev classifier</span><span>→ tool: spending_by_category</span><span style={cOk}>0.25s</span></div>
-          <div style={cRow3}><span style={cMid}>on-device SLM</span><span>→ answers first</span><span style={cChipOk}>confident</span></div>
-          <div style={cRow3}><span style={cMid}>cloud LLM</span><span style={cDim}>→ only when unsure</span><span style={cDim}>question text only</span></div>
+        <div style={{ height: 150, overflow: 'hidden', boxSizing: 'border-box', background: '#A9DFC8' }}>
+          <svg viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" role="img" style={{ width: '100%', height: '100%', display: 'block' }}
+            aria-label="A phone with a question bubble, Eating out in May?, and an answer bubble popping out of it">
+            <rect x="130" y="12" width="120" height="170" rx="24" fill="#173F33" />
+            <rect x="137" y="19" width="106" height="160" rx="17" fill="#EAF6F2" />
+            <rect x="172" y="26" width="36" height="9" rx="4.5" fill="#173F33" />
+            <g className="sg-q">
+              <path d="M194 44H322a16 16 0 0 1 16 16V71a5 5 0 0 1-5 5H194a16 16 0 0 1 0-32Z" fill="#0F766E" />
+              <text x="195" y="64.5" style={{ fontSize: 12.5, fontWeight: 600, fill: '#ffffff' }}>Eating out in May?</text>
+            </g>
+            <g className="sg-dots" fill="#0F766E">
+              {[0, 1, 2].map((n) =>
+                <circle key={n} className="sg-dot" cx={154 + n * 14} cy="104" r="4.5" style={{ animationDelay: `${n * 0.15}s` }} />)}
+            </g>
+            <g className="sg-a">
+              <path d="M58 84H196a16 16 0 0 1 16 16V118a16 16 0 0 1-16 16H47a5 5 0 0 1-5-5V100a16 16 0 0 1 16-16Z" fill="#F7C948" />
+              <rect className="sg-bar" x="58" y="95" width="84" height="12" rx="6" fill="#173F33" />
+              <rect className="sg-bar" x="58" y="113" width="128" height="6" rx="3" fill="#C99413" style={{ animationDelay: '0.12s' }} />
+              <rect className="sg-bar" x="58" y="123" width="90" height="6" rx="3" fill="#C99413" style={{ animationDelay: '0.24s' }} />
+            </g>
+          </svg>
         </div>
       );
 
