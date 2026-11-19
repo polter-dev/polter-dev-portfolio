@@ -25,6 +25,7 @@
     --color-accent: #10B981;
     --color-divider: rgba(255,255,255,0.08);
     --ink-strong: #0a0a0a;
+    --ghost: #0a0a0a;
     --ink: #1a1a1a;
     --ink-body: #3a3a36;
     --ink-soft: #5a5a55;
@@ -52,6 +53,7 @@
   html[data-theme="dark"] {
     --color-surface: #211f1b;
     --ink-strong: #f7f4ed;
+    --ghost: #d2cdc2;
     --ink: #ebe8e0;
     --ink-body: #c9c5bc;
     --ink-soft: #a39f97;
@@ -262,6 +264,149 @@
     0%, 43% { transform: scaleX(0); }
     51%, 100% { transform: none; }
   }
+
+  /* ===== Landing: burst and orbit ===== */
+  .bo-stage { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+  .bo-center { position: absolute; left: 50%; top: 48%; width: 0; height: 0; }
+  .bo svg { display: block; overflow: visible; }
+  .bo-c, .bo-ghost { position: absolute; left: 0; top: 0; padding: 0; pointer-events: auto; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .bo-c { will-change: transform, opacity; opacity: 0; border-radius: 50%; outline-offset: 5px !important; }
+  .bo-c[aria-hidden="true"] { pointer-events: none; }
+  .bo-ghost { z-index: 2; border-radius: 40%; }
+  .bo-label {
+    position: absolute; left: 50%; top: 50%; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Geist Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.2px; line-height: 1;
+    padding: 4px 4px 4px 9px; border-radius: 999px;
+    color: var(--ink); background: var(--card); border: 1px solid var(--line-strong);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .bo-label kbd {
+    font: inherit; font-size: 9.5px; padding: 2px 5px; border-radius: 999px;
+    background: var(--kbd-bg); color: var(--ink-soft);
+  }
+  .bo-c:hover .bo-label, .bo-c:focus-visible .bo-label { background: var(--ink-strong); color: var(--color-bg); border-color: transparent; }
+  .bo-c:hover .bo-label kbd, .bo-c:focus-visible .bo-label kbd { background: var(--c); color: #0a0a0a; }
+
+  /* parts animate around their own box */
+  .bo svg * { transform-box: fill-box; transform-origin: 50% 50%; }
+  .bo-eye { animation: bo-blink 4.6s infinite; animation-delay: var(--bd, 0s); }
+  @keyframes bo-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+
+  .bo-bob { display: block; animation: bo-bob 2.8s ease-in-out infinite alternate; animation-delay: var(--bd, 0s); }
+  @keyframes bo-bob { from { transform: translateY(-3px) rotate(-2.5deg); } to { transform: translateY(3px) rotate(2.5deg); } }
+  .bo-c:hover .bo-bob, .bo-c:focus-visible .bo-bob { animation: bo-jig 0.46s ease-in-out infinite alternate; }
+  @keyframes bo-jig { from { transform: translateY(-2px) rotate(-7deg); } to { transform: translateY(1px) rotate(7deg); } }
+
+  .bo-wave { transform-origin: 0% 100% !important; animation: bo-wave 0.9s ease-in-out infinite alternate; }
+  @keyframes bo-wave { from { transform: rotate(-16deg); } to { transform: rotate(18deg); } }
+  .bo-nl { animation: bo-nl 1.1s ease-in-out infinite alternate; }
+  .bo-nr { animation: bo-nr 1.1s ease-in-out infinite alternate; }
+  @keyframes bo-nl { to { transform: translateX(-2.5px); } }
+  @keyframes bo-nr { to { transform: translateX(2.5px); } }
+  .bo-cursor { animation: bo-cursor 1s steps(1) infinite; }
+  @keyframes bo-cursor { 50% { opacity: 0; } }
+  .bo-s1 { animation: bo-s1 1.5s ease-in-out infinite alternate; }
+  .bo-s2 { animation: bo-s2 1.5s ease-in-out infinite alternate; }
+  @keyframes bo-s1 { from { transform: translate(-2px, 0); } to { transform: translate(2px, -3.5px); } }
+  @keyframes bo-s2 { from { transform: translateX(2px); } to { transform: translate(-2px, -1.2px); } }
+  .bo-dot { animation: bo-dot 1.2s ease-in-out infinite; }
+  .bo-dot:nth-of-type(2) { animation-delay: 0.15s; }
+  .bo-dot:nth-of-type(3) { animation-delay: 0.3s; }
+  @keyframes bo-dot { 0%, 55%, 100% { transform: none; } 28% { transform: translateY(-3.5px); } }
+  .bo-wl { transform-origin: 100% 60% !important; animation: bo-wl 0.34s ease-in-out infinite alternate; }
+  .bo-wr { transform-origin: 0% 60% !important; animation: bo-wr 0.34s ease-in-out infinite alternate; }
+  @keyframes bo-wl { from { transform: rotate(16deg); } to { transform: rotate(-22deg); } }
+  @keyframes bo-wr { from { transform: rotate(-16deg); } to { transform: rotate(22deg); } }
+  .bo-tie { transform-origin: 50% 0% !important; animation: bo-tie 1.7s ease-in-out infinite alternate; }
+  @keyframes bo-tie { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+  .bo-glint { animation: bo-glint 3.8s ease-in-out infinite; animation-delay: var(--bd, 0s); }
+  @keyframes bo-glint { 0%, 70% { opacity: 0; transform: translateX(-3px); } 78% { opacity: 1; } 90%, 100% { opacity: 0; transform: translateX(19px); } }
+  .bo-glance { animation: bo-glance 4.4s ease-in-out infinite; }
+  @keyframes bo-glance { 0%, 44%, 100% { transform: none; } 50%, 64% { transform: translateX(-6.5px); } 70% { transform: none; } }
+  .bo-scan { animation: bo-scan 1.8s ease-in-out infinite alternate; }
+  @keyframes bo-scan { to { transform: translateX(19px); } }
+  .bo-al, .bo-ar { transform-origin: 50% 100% !important; animation: bo-ant 1.3s ease-in-out infinite alternate; }
+  .bo-ar { animation-delay: -0.6s; }
+  @keyframes bo-ant { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
+  /* the ghost */
+  .bo-float { display: block; animation: bo-float 3.4s ease-in-out infinite alternate; }
+  @keyframes bo-float { from { transform: translateY(-5px); } to { transform: translateY(5px); } }
+  .bo-act { display: block; transform-origin: 50% 88%; }
+  .bo-act.is-burst { animation: bo-burst 0.74s cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+  @keyframes bo-burst {
+    0% { transform: none; }
+    19% { transform: translateY(6%) scale(1.17, 0.78); }
+    37% { transform: translateY(-10%) scale(0.85, 1.22); }
+    57% { transform: translateY(2%) scale(1.08, 0.93); }
+    78% { transform: translateY(-1%) scale(0.98, 1.03); }
+    100% { transform: none; }
+  }
+  .bo-act.is-gulp { animation: bo-gulp 0.5s cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+  @keyframes bo-gulp {
+    0% { transform: none; }
+    30% { transform: scale(1.14, 1.1); }
+    58% { transform: scale(0.94, 0.97); }
+    100% { transform: none; }
+  }
+  .bo-cackle { opacity: 0; }
+  .is-burst .bo-cackle, .is-gulp .bo-cackle { animation: bo-oh 0.7s both; }
+  .is-burst .bo-smirk, .is-gulp .bo-smirk { animation: bo-smile 0.7s both; }
+  .is-burst .bo-brow, .is-gulp .bo-brow { animation: bo-brow-up 0.7s both; }
+  @keyframes bo-brow-up { 0%, 8% { transform: none; } 14%, 62% { transform: translateY(-3px) rotate(-6deg); } 74%, 100% { transform: none; } }
+  .bo-brow { animation: bo-brow 5.2s ease-in-out infinite; }
+  @keyframes bo-brow { 0%, 70%, 86%, 100% { transform: none; } 74%, 82% { transform: translateY(-2.5px) rotate(-5deg); } }
+  @keyframes bo-oh { 0%, 8% { opacity: 0; } 14%, 62% { opacity: 1; } 74%, 100% { opacity: 0; } }
+  @keyframes bo-smile { 0%, 8% { opacity: 1; } 14%, 62% { opacity: 0; } 74%, 100% { opacity: 1; } }
+  .bo-arm-l { transform-origin: 100% 50% !important; animation: bo-arm-l 1.9s ease-in-out infinite alternate; }
+  .bo-arm-r { transform-origin: 0% 50% !important; animation: bo-arm-r 1.9s ease-in-out infinite alternate; }
+  @keyframes bo-arm-l { from { transform: rotate(-12deg); } to { transform: rotate(22deg); } }
+  @keyframes bo-arm-r { from { transform: rotate(12deg); } to { transform: rotate(-22deg); } }
+  /* collapsed: the ghost beckons */
+  .bo-ghost[aria-expanded="false"] .bo-float { animation: bo-beckon 1.5s ease-in-out infinite; }
+  @keyframes bo-beckon {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    20% { transform: translateY(-9px) rotate(-5deg); }
+    40% { transform: translateY(0) rotate(4deg); }
+    55% { transform: translateY(-4px) rotate(-2deg); }
+    70% { transform: translateY(0) rotate(0); }
+  }
+
+  .bo-ring, .bo-spark { position: absolute; pointer-events: none; z-index: 0; }
+  .bo-ring {
+    left: -70px; top: -70px; width: 140px; height: 140px; border-radius: 50%;
+    border: 3px solid var(--color-accent); opacity: 0;
+    animation: bo-ring 0.75s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  .bo-ring + .bo-ring { animation-delay: 0.09s; border-width: 1.5px; }
+  @keyframes bo-ring { 0% { transform: scale(0.4); opacity: 0.95; } 100% { transform: scale(3.6); opacity: 0; } }
+  .bo-spark {
+    left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--c); opacity: 0;
+    animation: bo-spark 0.8s cubic-bezier(0.15, 0.75, 0.3, 1) both; animation-delay: var(--sd, 0s);
+  }
+  .bo-spark:nth-child(3n) { border-radius: 2px; }
+  @keyframes bo-spark {
+    0% { transform: rotate(var(--a)) translateX(34px) scale(1.4); opacity: 1; }
+    65% { opacity: 1; }
+    100% { transform: rotate(var(--a)) translateX(var(--d)) scale(0); opacity: 0; }
+  }
+
+  .bo-tap {
+    position: absolute; left: 0; white-space: nowrap; transform: translateX(-50%);
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--ink-soft); pointer-events: none;
+  }
+  /* no keyboard, no key hints: labels get narrower so they fit a phone */
+  @media (max-width: 719px), (hover: none) {
+    .bo-label kbd { display: none !important; }
+    .bo-label { padding: 5px 10px; }
+  }
+
+  .bo-paused * { animation-play-state: paused !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .bo, .bo * { animation: none !important; }
+  }
+
   /* still frame: the question and its answer, no dots */
   @media (prefers-reduced-motion: reduce) {
     .sg-q, .sg-a, .sg-bar, .sg-dots, .sg-dot { animation: none; }
@@ -1886,17 +2031,415 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "background": "#F4F1EC"
 } /*EDITMODE-END*/;
 
+// ===== Landing: burst and orbit =====
+// A ghost in the centre bursts the nav out as seven creatures that settle into a tilted orbit around it.
+const BO_INK = '#0a0a0a';
+const BO_ITEMS = [
+{ id: 'about', label: 'About', route: '/about', key: 'a', color: '#F23A1D' },
+{ id: 'projects', label: 'Projects', route: '/projects', key: 'p', color: '#2E5BFF' },
+{ id: 'stack', label: 'Stack', route: '/stack', key: 's', color: '#FFC20E' },
+{ id: 'chat', label: 'Ask Me', route: '/chat', key: 'k', color: '#10B981' },
+{ id: 'contact', label: 'Contact', route: '/contact', key: 'c', color: '#FF6A00' },
+{ id: 'resume', label: 'Resume', route: '/resume', key: 'r', color: '#FFFFFF' },
+{ id: 'github', label: 'GitHub', route: '__external', url: 'https://github.com/polter-dev', key: 'g', external: true, color: '#7B3DFF' }];
+
+// a heavy-lidded eye: flat lid on top (tilted by `tilt`), round underneath
+const boLid = (x, y, w, h, tilt = 0) =>
+`M${x - w / 2} ${y - tilt} L${x + w / 2} ${y + tilt} V${y + h - w / 2} a${w / 2} ${w / 2} 0 0 1 ${-w} 0 Z`;
+
+const BoArt = ({ id, size }) => {
+  const p = { width: size, height: size, viewBox: '0 0 64 64', 'aria-hidden': true };
+  switch (id) {
+    case 'about': // the cool one: flat-top, wraparound shades, a lazy two-finger "yo"
+      return <svg {...p}>
+        <g className="bo-wave">
+          <path d="M48 48 L55 33" stroke="#F23A1D" strokeWidth="7" strokeLinecap="round" />
+          <path d="M53.5 33 L54.5 24 M57.5 33.5 L59.5 25" stroke="#F23A1D" strokeWidth="3.6" strokeLinecap="round" />
+        </g>
+        <path d="M10 57 C10 45 19 38 32 38 C45 38 54 45 54 57 Q54 61 50 61 H14 Q10 61 10 57 Z" fill="#B8220C" />
+        <circle cx="32" cy="25" r="14.5" fill="#F23A1D" />
+        <path d="M17.5 22 C17 13 22 7.5 31 7.5 L46 6 C47 11 47.5 16 46.5 22 C42 17.5 37 16.5 32 17 C25 16.5 21 18 17.5 22 Z" fill="#8F1A08" />
+        <path d="M16.5 21.5 H47.5 V24.5 C47 30 43.5 31 40 31 C36.5 31 34.5 28 34 25.5 H30 C29.5 28 27.5 31 24 31 C20.5 31 17 30 16.5 24.5 Z" fill={BO_INK} />
+        <path className="bo-glint" d="M20.5 26.5 L24 23" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M28 36.4 H34.5 q2.2 0 3.4 -1.8" stroke={BO_INK} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </svg>;
+    case 'projects': // locked in: brows down, cursor blinking where the mouth should be
+      return <svg {...p}>
+        <path className="bo-nl" d="M9 25 L3 31.5 L9 38" stroke="#1A3BC9" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path className="bo-nr" d="M55 25 L61 31.5 L55 38" stroke="#1A3BC9" strokeWidth="4.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <rect x="12" y="11" width="40" height="41" rx="7" fill="#2E5BFF" />
+        <path d="M12 18 a7 7 0 0 1 7 -7 h26 a7 7 0 0 1 7 7 v4.5 H12 Z" fill="#1A3BC9" />
+        <circle cx="18.8" cy="16.8" r="1.8" fill="#fff" />
+        <circle cx="24.6" cy="16.8" r="1.8" fill="#fff" opacity="0.6" />
+        <circle cx="30.4" cy="16.8" r="1.8" fill="#fff" opacity="0.3" />
+        <path className="bo-eye" d="M18.5 29 L29 32.5 V37 H18.5 Z" fill={BO_INK} />
+        <path className="bo-eye" d="M45.5 29 L35 32.5 V37 H45.5 Z" fill={BO_INK} />
+        <rect className="bo-cursor" x="28" y="42" width="8" height="3.4" fill={BO_INK} />
+      </svg>;
+    case 'stack': // the boss slab, unimpressed, leaning back on the other two
+      return <svg {...p}>
+        <rect x="7" y="42" width="50" height="15" rx="4" fill="#D67F00" />
+        <rect className="bo-s2" x="10" y="27" width="44" height="15" rx="4" fill="#F5A300" />
+        <g className="bo-s1">
+          <g transform="rotate(-7 32 17)">
+            <rect x="13" y="7.5" width="38" height="19" rx="4" fill="#FFC20E" />
+            <path className="bo-eye" d={boLid(25, 14, 8, 5.2)} fill={BO_INK} />
+            <path className="bo-eye" d={boLid(39, 14, 8, 5.2)} fill={BO_INK} />
+            <path d="M33.5 22.3 H39" stroke={BO_INK} strokeWidth="2.2" strokeLinecap="round" />
+          </g>
+        </g>
+      </svg>;
+    case 'chat': // side-eye: it already knows what you're about to ask
+      return <svg {...p}>
+        <path d="M20 43 L13 58 L33 45 Z" fill="#0A9467" stroke="#0A9467" strokeWidth="3" strokeLinejoin="round" />
+        <rect x="6" y="8" width="52" height="39" rx="12" fill="#10B981" />
+        <path d={boLid(25, 18.5, 13, 9)} fill="#fff" />
+        <path d={boLid(39.5, 18.5, 13, 9)} fill="#fff" />
+        <g className="bo-glance">
+          <circle className="bo-eye" cx="28.4" cy="23" r="3.1" fill={BO_INK} />
+          <circle className="bo-eye" cx="42.9" cy="23" r="3.1" fill={BO_INK} />
+        </g>
+        <path d="M17.5 18.5 H32.5 M32 18.5 H47" stroke="#0A7A55" strokeWidth="2.4" strokeLinecap="round" />
+        <circle className="bo-dot" cx="25" cy="36.5" r="2.4" fill="#fff" />
+        <circle className="bo-dot" cx="32" cy="36.5" r="2.4" fill="#fff" />
+        <circle className="bo-dot" cx="39" cy="36.5" r="2.4" fill="#fff" />
+      </svg>;
+    case 'contact': // the courier: one eye in the wax seal, wings going flat out
+      return <svg {...p}>
+        <path className="bo-wl" d="M10 26 L-2 22 L2 30 L-3 33 L4 37 L10 38 Z" fill="#C24400" />
+        <path className="bo-wr" d="M54 26 L66 22 L62 30 L67 33 L60 37 L54 38 Z" fill="#C24400" />
+        <rect x="8" y="13" width="48" height="40" rx="5" fill="#FF6A00" />
+        <path d="M11 17.5 L26.5 31 M53 17.5 L37.5 31" stroke="#C24400" strokeWidth="3" strokeLinecap="round" />
+        <g className="bo-eye">
+          <circle cx="32" cy="34" r="7.6" fill="#fff" />
+          <circle className="bo-pupil" cx="33.2" cy="35.2" r="3.3" fill={BO_INK} />
+          <path d="M24.4 33 A7.6 7.6 0 0 1 39.6 33 Z" fill="#C24400" />
+        </g>
+      </svg>;
+    case 'resume': // all business: square frames, dead level gaze, tie done up
+      return <svg {...p}>
+        <path d="M19 5 H39 L51 17 V54 a5 5 0 0 1 -5 5 H18 a5 5 0 0 1 -5 -5 V11 a6 6 0 0 1 6 -6 Z" fill="#fff" stroke={BO_INK} strokeWidth="2.6" strokeLinejoin="round" />
+        <path d="M39 5 V14 a3 3 0 0 0 3 3 H51 Z" fill="#DCD7CE" stroke={BO_INK} strokeWidth="2.6" strokeLinejoin="round" />
+        <path d="M19 11.5 H31" stroke={BO_INK} strokeWidth="2" strokeLinecap="round" opacity="0.3" />
+        <rect x="15.5" y="20.5" width="14" height="10" rx="1.5" fill="none" stroke={BO_INK} strokeWidth="2.6" />
+        <rect x="34.5" y="20.5" width="14" height="10" rx="1.5" fill="none" stroke={BO_INK} strokeWidth="2.6" />
+        <path d="M29.5 24.5 H34.5" stroke={BO_INK} strokeWidth="2.4" />
+        <path className="bo-eye" d={boLid(22.5, 24.5, 5.4, 3.6)} fill={BO_INK} />
+        <path className="bo-eye" d={boLid(41.5, 24.5, 5.4, 3.6)} fill={BO_INK} />
+        <path className="bo-tie" d="M29.4 36 h5.2 l-1.2 3.4 l3 10.6 l-4.4 4.4 l-4.4 -4.4 l3 -10.6 Z" fill="#7B3DFF" stroke={BO_INK} strokeWidth="1.6" strokeLinejoin="round" />
+      </svg>;
+    case 'github': // night shift: no eyes, just a visor and a scanning light
+      return <svg {...p}>
+        <g className="bo-al">
+          <path d="M25 25 V12" stroke="#4E1FCC" strokeWidth="3.8" strokeLinecap="round" />
+          <circle cx="25" cy="8.5" r="4.4" fill="#7B3DFF" stroke="#4E1FCC" strokeWidth="3" />
+        </g>
+        <g className="bo-ar">
+          <path d="M38 25 C38 17 47 20 47 12" stroke="#4E1FCC" strokeWidth="3.8" strokeLinecap="round" fill="none" />
+          <circle cx="47" cy="8.5" r="4.4" fill="#7B3DFF" stroke="#4E1FCC" strokeWidth="3" />
+        </g>
+        <circle cx="32" cy="40" r="19.5" fill="#7B3DFF" />
+        <rect x="14.5" y="33" width="35" height="10" rx="5" fill={BO_INK} />
+        <rect className="bo-scan" x="19" y="35.5" width="7" height="5" rx="2.5" fill="#10B981" />
+      </svg>;
+    default: return null;
+  }
+};
+
+// the hero: tattered hem, one lid down, one brow up, a smirk that turns into a cackle on the burst
+const BoGhost = ({ size, eyesRef }) =>
+<svg width={size * 100 / 110} height={size} viewBox="0 0 100 110" aria-hidden="true">
+  <path className="bo-arm-l" d="M17 54 C9 54 3 59 1 67 C7 63 12 63 17 64 Z" fill="var(--ghost)" />
+  <path className="bo-arm-r" d="M83 54 C91 54 97 59 99 67 C93 63 88 63 83 64 Z" fill="var(--ghost)" />
+  <path d="M14 50 C14 27 30 10 50 10 C70 10 86 27 86 50 V86 Q86 99 93 106 Q80 106 72 97 Q68 104 60 108 Q54 102 50 96 Q46 103 37 108 Q33 101 28 96 Q22 102 11 104 Q14 96 14 86 Z" fill="var(--ghost)" />
+  <g ref={eyesRef}>
+    <g className="bo-eye">
+      <path d={boLid(38, 44, 14, 9, 1.4)} fill="var(--color-bg)" />
+      <circle cx="39.5" cy="49.5" r="3.4" fill="var(--ghost)" />
+    </g>
+    <g className="bo-eye">
+      <path d={boLid(62, 41.5, 14, 11)} fill="var(--color-bg)" />
+      <circle cx="63.5" cy="48.5" r="3.4" fill="var(--ghost)" />
+    </g>
+    <path className="bo-brow" d="M54 33.5 Q61 28.5 70.5 31" stroke="var(--color-bg)" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+    <path className="bo-smirk" d="M42 62 Q49 63 54 61.5 Q57.5 60.5 59.5 57" stroke="var(--color-bg)" strokeWidth="3" strokeLinecap="round" fill="none" />
+    <path className="bo-cackle" d="M40 57 H61 Q61 69 50.5 69 Q40 69 40 57 Z" fill="var(--color-bg)" />
+  </g>
+</svg>;
+
+const boGeo = () => {
+  const w = window.innerWidth, h = window.innerHeight;
+  // narrow: a tall, near-round orbit with labels underneath
+  if (w < 720) return {
+    narrow: true, rx: Math.max(96, Math.min(w / 2 - 54, 180)), ry: Math.max(130, Math.min(h * 0.27, 220)),
+    tilt: 0, size: 58, ghost: 104, depth: 0.08, ldx: 0, ldy: 46 };
+  // wide: a flat tilted ring, so creatures pass behind the ghost's head and in front of its hem
+  const k = Math.min(1, Math.max(0.55, (h - 130) / 520)); // short windows (a phone on its side) shrink the whole scene
+  return {
+    narrow: false, rx: Math.min(340 * k, w / 2 - 144), ry: 84 * k,
+    tilt: -8 * Math.PI / 180, size: 88 * k, ghost: 164 * k, depth: 0.17, ldx: 48 + 44 * k, ldy: 12 + 44 * k };
+};
+
+const BO_SPARKS = Array.from({ length: 14 }, (_, i) => ({
+  a: i * (360 / 14) + (i % 2 ? 9 : -6), d: 150 + (i * 53) % 90, c: BO_ITEMS[i % BO_ITEMS.length].color, sd: (i % 3) * 0.03 }));
+
+const Landing = ({ onPick, leaving, reduce, fromPill }) => {
+  const [open, setOpen] = useState(!!reduce);
+  const [burstN, setBurstN] = useState(0);
+  const [g, setG] = useState(boGeo);
+  const stageRef = useRef(null), actRef = useRef(null), eyesRef = useRef(null);
+  const els = useRef([]), labels = useRef([]), timers = useRef([]);
+  const openRef = useRef(!!reduce), gRef = useRef(g);
+  gRef.current = g;
+  const sim = useRef(null);
+  if (!sim.current) sim.current = {
+    phase: reduce ? -1.8 : -2.35, // the still frame keeps everyone clear of the ghost
+    kick: 0, mul: 1, hover: -1, focus: -1, stop: false, px: 0, py: 0, ex: 0, ey: 0, last: 0,
+    items: BO_ITEMS.map(() => ({ r: reduce ? 1 : 0, rv: 0, target: reduce ? 1 : 0, pending: null, at: 0, s: 1, sv: 0, st: 1, lo: reduce ? 1 : 0, z: 0, x: 0, y: 0 })) };
+
+  const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
+
+  // writes every creature's transform from the sim state (transform + opacity only)
+  const paint = () => {
+    const S = sim.current, G = gRef.current, n = BO_ITEMS.length;
+    const ct = Math.cos(G.tilt), sn = Math.sin(G.tilt);
+    for (let i = 0; i < n; i++) {
+      const it = S.items[i], el = els.current[i];
+      if (!el) continue;
+      const th = S.phase + i * 2 * Math.PI / n, c = Math.cos(th), s = Math.sin(th);
+      const ex = G.rx * c * it.r, ey = G.ry * s * it.r;
+      const x = ex * ct - ey * sn, y = ex * sn + ey * ct;
+      const vis = Math.min(1, Math.max(0, it.r * 3));
+      const ds = 1 + G.depth * s * vis; // nearer = bigger
+      const stretch = Math.max(0.8, Math.min(1.34, 1 + it.rv * 0.045)); // stretch along travel, squash on the rebound
+      const a = Math.atan2(y, x);
+      el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) rotate(${a.toFixed(3)}rad) scale(${stretch.toFixed(3)},${(1 / stretch).toFixed(3)}) rotate(${(-a).toFixed(3)}rad) scale(${(vis * ds * it.s).toFixed(3)})`;
+      el.style.opacity = Math.min(1, Math.max(0, it.r * 4)).toFixed(2);
+      const z = i === S.hover || i === S.focus ? 5 : s >= 0 ? 3 : 1; // ghost sits at 2
+      if (z !== it.z) { it.z = z; el.style.zIndex = z; }
+      const lb = labels.current[i];
+      if (lb) {
+        // wide: the label rides the outside of the ring so it never ends up behind the ghost
+        const lx = G.narrow ? 0 : Math.sign(c) * Math.pow(Math.abs(c), 0.6) * G.ldx;
+        const ly = G.narrow ? G.ldy : Math.sign(s) * Math.pow(Math.abs(s), 0.6) * G.ldy;
+        lb.style.transform = `translate(calc(-50% + ${lx.toFixed(1)}px), calc(-50% + ${ly.toFixed(1)}px)) scale(${(1 / ds).toFixed(3)})`; // text stays one size at any depth
+        lb.style.opacity = it.lo.toFixed(2);
+      }
+      it.x = x; it.y = y;
+    }
+  };
+
+  // sim loop: runs only while the landing is mounted and the tab is visible
+  useEffect(() => {
+    if (reduce) { paint(); return; }
+    let raf = 0;
+    const frame = (now) => {
+      const S = sim.current;
+      const dt = Math.min(0.034, (now - (S.last || now)) / 1000);
+      S.last = now;
+      const want = S.hover >= 0 || S.focus >= 0 || S.stop ? 0 : 1; // hold still while someone is aiming
+      S.mul += (want - S.mul) * (1 - Math.exp(-dt * 7));
+      S.kick *= Math.exp(-dt * 2.3);
+      S.phase += (0.13 * S.mul + S.kick) * dt;
+      for (let i = 0; i < S.items.length; i++) {
+        const it = S.items[i];
+        if (it.pending !== null && now >= it.at) { it.target = it.pending; it.pending = null; }
+        const out = it.target > 0.5, k = out ? 165 : 300, damp = out ? 12 : 34; // bouncy out, clean in
+        for (let q = 0; q < 2; q++) {
+          it.rv += (k * (it.target - it.r) - damp * it.rv) * dt / 2;
+          it.r += it.rv * dt / 2;
+        }
+        if (it.r < 0) { it.r = 0; it.rv = 0; }
+        // labels wait until their creature has nearly landed, and go first on the way back in
+        const lo = out ? (it.r > 0.8 && Math.abs(it.rv) < 1.6 ? 1 : it.lo) : 0;
+        it.lo += (lo - it.lo) * (1 - Math.exp(-dt * (out ? 9 : 30)));
+        it.sv += (430 * (it.st - it.s) - 19 * it.sv) * dt;
+        it.s += it.sv * dt;
+      }
+      // the ghost watches the pointer, or whichever creature has keyboard focus
+      const f = S.focus >= 0 ? S.items[S.focus] : null;
+      const tx = f ? f.x : S.px, ty = f ? f.y : S.py, len = Math.hypot(tx, ty) || 1, m = Math.min(1, len / 140);
+      const e = 1 - Math.exp(-dt * 9);
+      S.ex += (tx / len * m * 5 - S.ex) * e;
+      S.ey += (ty / len * m * 4 - S.ey) * e;
+      if (eyesRef.current) eyesRef.current.style.transform = `translate(${S.ex.toFixed(2)}px,${S.ey.toFixed(2)}px)`;
+      paint();
+      raf = requestAnimationFrame(frame);
+    };
+    const start = () => { cancelAnimationFrame(raf); sim.current.last = 0; raf = requestAnimationFrame(frame); };
+    const onVis = () => {
+      if (stageRef.current) stageRef.current.classList.toggle('bo-paused', document.hidden);
+      if (document.hidden) cancelAnimationFrame(raf); else start();
+    };
+    const onMove = (e) => {
+      sim.current.px = e.clientX - window.innerWidth / 2;
+      sim.current.py = e.clientY - window.innerHeight * 0.48;
+    };
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    if (!document.hidden) start();
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('pointermove', onMove);
+    };
+  }, [reduce]);
+
+  useEffect(() => {
+    const onResize = () => setG(boGeo());
+    window.addEventListener('resize', onResize);
+    return () => { window.removeEventListener('resize', onResize); timers.current.forEach(clearTimeout); };
+  }, []);
+  useEffect(() => { if (reduce) paint(); }, [g, reduce]);
+
+  const act = (cls) => {
+    const el = actRef.current;
+    if (!el) return;
+    el.classList.remove('is-burst', 'is-gulp');
+    void el.offsetWidth; // restart the keyframes
+    el.classList.add(cls);
+  };
+
+  const burst = () => {
+    if (openRef.current) return;
+    openRef.current = true;
+    setOpen(true);
+    act('is-burst'); // squashes down first; the creatures leave as it springs back up
+    later(() => {
+      if (!openRef.current) return;
+      const now = performance.now(), S = sim.current;
+      S.kick = 2.5; // spin out, then decay into the slow orbit
+      S.items.forEach((it, i) => { it.pending = 1; it.at = now + i * 42; });
+      setBurstN((n) => n + 1);
+      if (window.AIBackdrop) window.AIBackdrop.pulse(1);
+    }, 140);
+  };
+
+  const gather = (chosen = -1) => {
+    openRef.current = false;
+    const now = performance.now(), S = sim.current, n = S.items.length;
+    S.kick = -1.3;
+    S.items.forEach((it, i) => { it.pending = 0; it.at = now + (i === chosen ? 150 : (n - 1 - i) * 22); });
+    later(() => act('is-gulp'), 240);
+  };
+
+  // the nav presents itself: nobody has to discover the click
+  useEffect(() => {
+    if (!reduce) later(burst, fromPill ? 420 : 780);
+  }, []);
+
+  // a destination was chosen (click or shortcut): the chosen one pops, everyone is scooped back in
+  useEffect(() => {
+    if (reduce) return;
+    const S = sim.current, i = BO_ITEMS.findIndex((b) => b.id === leaving);
+    if (!leaving) { // the exit was cancelled (esc mid-flight): let everyone back out
+      if (S.stop) { S.stop = false; S.hover = -1; S.items.forEach((it) => it.st = 1); later(burst, 80); }
+      return;
+    }
+    S.stop = true;
+    S.hover = i;
+    if (i >= 0) S.items[i].st = 1.34;
+    gather(i);
+  }, [leaving]);
+
+  const toggle = () => {
+    if (leaving) return;
+    if (openRef.current) { gather(); setOpen(false); } else burst();
+  };
+
+  const setSt = (i, v) => { if (!leaving) sim.current.items[i].st = v; };
+
+  const rise = -(window.innerHeight * 0.48 - 46); // where the pill lives on inner pages
+  return (
+    <M.div
+      ref={stageRef}
+      className="bo bo-stage"
+      initial={reduce ? false : 'from'}
+      animate="in"
+      exit="out"
+      variants={{ from: {}, in: {}, out: { transition: { duration: 0.3 } } }}>
+      <M.div
+        className="bo-center"
+        variants={{
+          from: { opacity: 0, scale: 0.3, y: fromPill ? rise : 14 },
+          in: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 250, damping: 19 } },
+          out: reduce ? { opacity: 0 } : { opacity: 0, scale: 0.3, y: rise, transition: { duration: 0.3, ease: [0.5, 0, 0.2, 1] } } }}>
+
+        {burstN > 0 &&
+        <div key={burstN} aria-hidden="true">
+          <span className="bo-ring" /><span className="bo-ring" />
+          {BO_SPARKS.map((s, i) =>
+          <span key={i} className="bo-spark" style={{ '--a': s.a + 'deg', '--d': s.d + 'px', '--c': s.c, '--sd': s.sd + 's' }} />)}
+        </div>}
+
+        {BO_ITEMS.map((item, i) =>
+        <button
+          key={item.id}
+          ref={(el) => els.current[i] = el}
+          className="bo-c"
+          aria-label={item.external ? item.label + ' (opens in a new tab)' : item.label}
+          aria-hidden={!open}
+          tabIndex={open ? 0 : -1}
+          onClick={() => { sim.current.items[i].sv = 5; onPick(item); }}
+          onPointerEnter={(e) => { if (e.pointerType === 'mouse') { sim.current.hover = i; setSt(i, 1.16); } }}
+          onPointerLeave={() => { if (!leaving) { sim.current.hover = -1; setSt(i, 1); } }}
+          onPointerDown={() => setSt(i, 0.86)}
+          onPointerUp={() => setSt(i, sim.current.hover === i ? 1.16 : 1)}
+          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { sim.current.focus = i; setSt(i, 1.16); } }}
+          onBlur={() => { if (sim.current.focus === i) { sim.current.focus = -1; setSt(i, 1); } }}
+          style={{ width: g.size, height: g.size, margin: -g.size / 2, '--c': item.color, '--bd': -(i * 0.83) + 's' }}>
+          <span className="bo-bob"><BoArt id={item.id} size={g.size} /></span>
+          <span className="bo-label" ref={(el) => labels.current[i] = el}>
+            {item.label}{item.external ? ' ↗' : ''}
+            <kbd>{item.key.toUpperCase()}</kbd>
+          </span>
+        </button>)}
+
+        {reduce ?
+        <div className="bo-ghost" style={{ margin: `${-g.ghost / 2}px ${-g.ghost * 50 / 110}px`, pointerEvents: 'none' }}>
+          <BoGhost size={g.ghost} eyesRef={eyesRef} />
+        </div> :
+        <M.button
+          className="bo-ghost"
+          onClick={toggle}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.88 }}
+          transition={{ type: 'spring', stiffness: 520, damping: 17 }}
+          aria-expanded={open}
+          aria-label={open ? 'Gather the navigation back in' : 'Let the navigation out'}
+          style={{ margin: `${-g.ghost / 2}px ${-g.ghost * 50 / 110}px`, '--bd': '-2.1s' }}>
+          <span className="bo-float"><span className="bo-act" ref={actRef}><BoGhost size={g.ghost} eyesRef={eyesRef} /></span></span>
+        </M.button>}
+
+        <AP>
+          {!open && !leaving &&
+          <M.div
+            key="tap"
+            className="bo-tap"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.9, duration: 0.3 } }}
+            exit={{ opacity: 0, transition: { duration: 0.12 } }}
+            style={{ top: g.ghost / 2 + 20 }}>
+            boo. tap the ghost
+          </M.div>}
+        </AP>
+      </M.div>
+    </M.div>);
+};
+
 const accentSwatches = ['#10B981', '#F97316', '#6366F1', '#EC4899', '#FACC15'];
 const bgSwatches = ['#F4F1EC', '#EDE8DD', '#F5F5F2', '#E8E4DA', '#FFFFFF'];
 
 function App() {
   const [route, setRoute] = useState('/');
   const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
-  const [hint, setHint] = useState(true);
+  const reduce = useReducedMotion();
+  const [leaving, setLeaving] = useState(null); // landing creature being followed out
+  const visited = useRef(false); // has an inner page been shown (so the ghost comes back down from the pill)
+  const nav = useRef({});
   const [theme, setTheme] = useState(() => {
     try { return window.localStorage.getItem('polter_theme') || 'light'; } catch (e) { return 'light'; }
   });
-  const [pillHover, setPillHover] = useState(false);
 
   // sync background CSS var + theme
   useEffect(() => {
@@ -1912,14 +2455,28 @@ function App() {
   useEffect(() => {
     if (window.AIBackdrop) {
       window.AIBackdrop.pulse(1);
-      window.AIBackdrop.setIntensity(route === '/' ? 1 : 0.55);
+      window.AIBackdrop.setIntensity(route === '/' ? 0.7 : 0.55);
     }
   }, [route]);
 
-  // hide hint after navigation
   useEffect(() => {
-    if (route !== '/') setHint(false);
+    if (route !== '/') visited.current = true;
   }, [route]);
+
+  // leaving the landing: let the creatures get scooped up first, then hand off to the pill
+  const go = (to, id) => {
+    clearTimeout(nav.current.timer);
+    if (nav.current.route === '/' && to !== '/' && !nav.current.reduce) {
+      setLeaving(id || (BO_ITEMS.find((b) => b.route === to) || {}).id || 'none');
+      nav.current.timer = setTimeout(() => { setLeaving(null); setRoute(to); }, 330);
+    } else {
+      setLeaving(null);
+      setRoute(to);
+    }
+  };
+  nav.current.route = route;
+  nav.current.reduce = reduce;
+  nav.current.go = go;
 
   // keyboard shortcuts
   useEffect(() => {
@@ -1927,13 +2484,13 @@ function App() {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const k = e.key.toLowerCase();
-      if (k === 'a') {setRoute('/about');} else
-      if (k === 'p') {setRoute('/projects');} else
-      if (k === 's') {setRoute('/stack');} else
-      if (k === 'r') {setRoute('/resume');} else
-      if (k === 'k') {setRoute('/chat');} else
-      if (k === 'c') {setRoute('/contact');} else
-      if (k === 'h' || k === 'escape') {setRoute('/');} else
+      if (k === 'a') {nav.current.go('/about');} else
+      if (k === 'p') {nav.current.go('/projects');} else
+      if (k === 's') {nav.current.go('/stack');} else
+      if (k === 'r') {nav.current.go('/resume');} else
+      if (k === 'k') {nav.current.go('/chat');} else
+      if (k === 'c') {nav.current.go('/contact');} else
+      if (k === 'h' || k === 'escape') {nav.current.go('/');} else
       if (k === 'g') {
         // simulate external nav
         flashExternal('GitHub');
@@ -1958,7 +2515,7 @@ function App() {
       }
       return;
     }
-    setRoute(item.route);
+    go(item.route, item.id);
   };
 
   const isLanding = route === '/';
@@ -1977,36 +2534,37 @@ function App() {
         <ThemeToggle theme={theme} onToggle={() => setTheme((t) => t === 'dark' ? 'light' : 'dark')} />
       </div>
 
-      {/* Pill — anchored differently on landing vs inner */}
-      <LG>
+      {/* Landing: the ghost and its orbit. It rises into the pill's place as it leaves. */}
+      <AP>
+        {isLanding &&
+        <Landing key="landing" onPick={handleNavigate} leaving={leaving} reduce={reduce} fromPill={visited.current} />}
+      </AP>
+
+      {/* Pill: the nav on inner pages. It arrives from where the ghost was. */}
+      <AP>
+        {!isLanding &&
         <M.div
           key="pill-anchor"
-          layout
-          transition={{ type: 'spring', stiffness: 280, damping: 32 }}
+          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.45, y: window.innerHeight * 0.48 - 46 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.7, y: reduce ? 0 : 36, transition: { duration: 0.2 } }}
+          transition={{ type: 'spring', stiffness: 260, damping: 27, opacity: { duration: 0.2 } }}
           style={{
             position: 'fixed',
             left: 0, right: 0,
-            top: isLanding ? '50%' : 28,
-            transform: isLanding ? 'translateY(-50%)' : 'none',
+            top: 28,
             display: 'flex',
             justifyContent: 'center',
             zIndex: 20,
             pointerEvents: 'none'
           }}>
-          
-          <M.div
-            key="pill-inner"
-            initial={isLanding ? { opacity: 0, y: 20, scale: 0.95 } : false}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            style={{ pointerEvents: 'auto' }}
-            onMouseEnter={() => isLanding && setPillHover(true)}
-            onMouseLeave={() => setPillHover(false)}>
-            
-            <Pill route={route} onNavigate={handleNavigate} accent={tweaks.accent} showName={tweaks.showName} forceCompact={isLanding && !pillHover} tiny={isLanding && !pillHover} />
-          </M.div>
-        </M.div>
-      </LG>
+          <div style={{ pointerEvents: 'auto' }}>
+            <LG>
+              <Pill route={route} onNavigate={handleNavigate} accent={tweaks.accent} showName={tweaks.showName} />
+            </LG>
+          </div>
+        </M.div>}
+      </AP>
 
       {/* Inner page content */}
       <AP mode="popLayout">
@@ -2049,45 +2607,6 @@ function App() {
                 back home <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-faint)', borderColor: 'var(--line)' }}>esc</span>
               </button>
             </div>}
-          </M.div>
-        }
-      </AP>
-
-      {/* Ambient keyboard hint */}
-      <AP>
-        {(isLanding && hint) &&
-        <M.div
-          key="kbd-hint"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, delay: isLanding ? 1.0 : 0.3 }}
-          exit={{ opacity: 0, y: -4, transition: { duration: 0.18, ease: 'easeOut' } }}
-          style={{
-            position: 'fixed',
-            left: '50%',
-            bottom: isLanding ? 'auto' : 28,
-            top: isLanding ? 'calc(50% + 90px)' : 'auto',
-            transform: 'translateX(-50%)',
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontFamily: 'Geist Mono, monospace',
-            fontSize: 11, color: 'var(--ink-faint)',
-            zIndex: 5,
-            padding: isLanding ? 0 : '8px 14px',
-            background: isLanding ? 'transparent' : 'var(--card-glass)',
-            backdropFilter: isLanding ? 'none' : 'blur(8px)',
-            border: isLanding ? 'none' : '1px solid var(--chip-line)',
-            borderRadius: 999,
-          }}>
-          
-            <span>navigate</span>
-            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>A</span>
-            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>P</span>
-            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>S</span>
-            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>K</span>
-            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>R</span>
-            <span className="kbd" style={{ background: 'var(--kbd-bg)', color: 'var(--ink-soft)', borderColor: 'var(--line)' }}>C</span>
-            <span>· esc to home · or click the pill</span>
           </M.div>
         }
       </AP>
